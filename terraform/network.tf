@@ -20,3 +20,52 @@ resource "google_compute_subnetwork" "connector_subnet" {
   region        = "asia-east1"
   network       = google_compute_network.main_vpc.id
 }
+
+# 定義防火牆
+# 允許 VPC 內部互相溝通 (Internal Connectivity)
+resource "google_compute_firewall" "allow_internal" {
+  name    = "allow-internal-traffic"
+  network = google_compute_network.main_vpc.name
+
+  # 允許你定義的所有 10.x.x.x 網段互相通訊
+  source_ranges = ["10.0.0.0/8"]
+
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
+  }
+  allow {
+    protocol = "icmp" # 方便你測試 ping
+  }
+
+  description = "允許 VPC 內部的子網互相溝通"
+}
+
+# 允許 Google 健康檢查 (Health Checks)
+resource "google_compute_firewall" "allow_health_checks" {
+  name    = "allow-health-checks"
+  network = google_compute_network.main_vpc.name
+
+  # 這些是 Google 特定的 Health Check IP 網段，固定不變
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080"]
+  }
+}
+
+# IAP 遠端存取 (可選，建議)
+resource "google_compute_firewall" "allow_iap_proxy" {
+  name    = "allow-iap-proxy"
+  network = google_compute_network.main_vpc.name
+
+  source_ranges = ["35.235.240.0/20"] # IAP 專用網段
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "3389"]
+  }
+}
