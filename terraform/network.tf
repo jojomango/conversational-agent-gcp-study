@@ -69,3 +69,16 @@ resource "google_compute_firewall" "allow_iap_proxy" {
     ports    = ["22", "3389"]
   }
 }
+
+# VPC connector
+resource "google_vpc_access_connector" "main_connector" {
+  name   = "vpc-connector"
+  region = "asia-east1"
+  # 使用我們 Day 6 準備好的 10.8.0.0/28 子網
+  subnet {
+    name = google_compute_subnetwork.connector_subnet.name
+  }
+  machine_type  = "e2-micro"
+  min_instances = 2
+  max_instances = 3
+}
