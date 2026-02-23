@@ -20,7 +20,7 @@
 - [x] D7: Cloud Run & VPC Connector & IAM Auth
 
 ### Week 2: Deployment & Integration (Next 🔜)
-- [ ] D8: Cloud SQL (Private IP) & VPC Connection Test
+- [x] D8: Cloud SQL (Private IP) & GCS & VPC Connection Test
 - [ ] D9: Artifact Registry & Docker Packaging
 - [ ] D10: Cloud Run Jobs (Crawler Implementation)
 - [ ] D11: Cloud Scheduler (Automation)
