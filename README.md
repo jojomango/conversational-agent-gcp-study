@@ -34,7 +34,7 @@ chat-bot/
 | 服務 | 用途 | 狀態 |
 |------|------|------|
 | Cloud Run | client / bff / agent 部署 | ✅ Done (D7) |
-| Cloud SQL (PostgreSQL) | 知識庫儲存 | 📅 D8 |
+| Cloud SQL (PostgreSQL) | 知識庫儲存 | ✅ Done (D8) |
 | Artifact Registry | Docker Image 管理 | 📅 D9 |
 | Cloud Run Jobs | 定期爬蟲 | 📅 D10 |
 | Cloud Scheduler | 自動化觸發 | 📅 D11 |
@@ -51,8 +51,19 @@ chat-bot/
 | 個人 side project | Owner | 本 repo | 完全控制 |
 | 公司 Lab | 有限（無組織層級） | 獨立 repo | 另一台機器操作 |
 
+## 🚀 基礎設施管理 (Makefile)
+
+為了方便在開發期間節省成本，我們提供了快捷指令來管理 GCP 資源 (透過 Terraform)：
+
+| 指令 | 用途 |
+|------|------|
+| `make up` | 啟動並部署全部基礎設施 |
+| `make db-off` | 僅銷毀 Cloud SQL 資料庫 (保留其他網路與運算資源)，節省 DB 閒置費用 |
+| `make db-on` | 重新部署原本被銷毀的 Cloud SQL 資料庫 |
+| `make down` | 徹底銷毀所有資源 |
+
 ## 📄 詳細進度
 請見 [SCOPE.md](./SCOPE.md)
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-02-23*

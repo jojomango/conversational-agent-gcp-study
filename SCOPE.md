@@ -3,11 +3,11 @@
 ## 📌 專案願景
 建立一個銀行級安全的知識庫系統，允許員工以自然語言查詢 OWASP 等公開規範，並具備自動化爬蟲更新機制。
 
-## 🏗 當前架構 (Updated: Day 7)
+## 🏗 當前架構 (Updated: Day 11)
 - **運算平台**: Cloud Run (BFF / Client / Crawler)
 - **網路安全**: VPC, Private Subnets, VPC Access Connector (已完成)
 - **身分驗證**: Google IAM-based Auth (取代 IAP 以節省成本)
-- **資料庫**: Cloud SQL PostgreSQL (Private IP, 預計 Day 8 實作)
+- **資料庫**: Cloud SQL PostgreSQL & Cloud Storage (已完成部署)
 - **基礎設施即代碼**: Terraform
 
 ## 📅 執行進度表 (W1-W5)
@@ -45,4 +45,4 @@
 - [ ] 設定 Cloud NAT 以固定爬蟲出口 IP。
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-02-23*
