@@ -6,6 +6,9 @@ resource "google_cloud_run_v2_service" "bff_service" {
   # 銀行級安全：只允許透過認證的請求 (取代 IAP 的方案)
   ingress = "INGRESS_TRAFFIC_ALL"
 
+  # 允許 terraform destroy 刪除此服務 (POC 練習用)
+  deletion_protection = false
+
   template {
     # 連結我們 Day 5 做的 Service Account
     service_account = google_service_account.chatbot_bff_sa.email
