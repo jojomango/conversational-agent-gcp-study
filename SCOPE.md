@@ -21,23 +21,48 @@
 
 ### Week 2: Deployment & Integration (Next 🔜)
 - [x] D8: Cloud SQL (Private IP) & GCS & VPC Connection Test
-- [ ] D9: Artifact Registry & Docker Packaging
-- [ ] D10: Cloud Run Jobs (Crawler Implementation)
-- [ ] D11: Cloud Scheduler (Automation)
-- [ ] D12-D13: Firebase Auth & Identity-Based Auth Integration
-- [ ] D14: Cloud Run Optimization (Cold Start / Concurrency)
+[ ] D9: Cloud NAT & Cloud Router: 讓私有 Cloud Run 能透過固定 IP 訪問外部網站
 
-### Week 3: Enterprise Security (Planned)
-- [ ] D15: Secret Manager (DB Credentials / AI Keys)
-- [ ] D16: Cloud NAT (Static Outbound IP for Crawler)
-- [ ] D17: Private Service Connect (Vertex AI Private Access)
-- [ ] D19: VPC Service Controls (Data Exfiltration Protection)
+[ ] D10: Crawler 實作 (Cloud Run Job): 爬取 OWASP 官網內容並暫存至 GCS
 
-### Week 4-5: AI & Monitoring & Finalization
-- [ ] D22-D24: Logging, Monitoring, Budget Alerts
-- [ ] D25-D26: Vertex AI & RAG (Gemini API)
-- [ ] D27: CI/CD (Cloud Build)
-- [ ] D28-D30: Final Architecture Review & Proposal
+[ ] D11: Data Ingestion Pipeline: 讀取爬蟲資料 -> 呼叫 Embedding API -> 存入 Cloud SQL
+
+[ ] D12: Metadata 分類設計: 在入庫時自動標籤 (Category: A01-A10, Stack: Frontend/Backend)
+
+[ ] D13: Artifact Registry 與 Docker 鏡像自動化管理 (CI 基礎)
+
+[ ] D14: Firebase Auth 與身分驗證整合 (確保 Client 端安全)
+
+Week 3: AI Logic & Conversational Agent (核心大腦)
+[ ] D15: Dialogflow CX (CA) 基礎: 建立 Agent、Start Page 與 OWASP 核心意圖
+
+[ ] D16: Session Parameters: 設計 CA 的記憶功能 (例如：記得用戶正在問 XSS)
+
+[ ] D17: OpenAPI Spec (Tool Call): 撰寫 Swagger 文件，定義 CA 如何呼叫 BFF
+
+[ ] D18: BFF Webhook 實作: 開發 Cloud Run API 接收來自 CA 的請求
+
+[ ] D19: Secret Manager: 安全儲存資料庫密碼與 API Keys，拒絕 Code 內寫死
+
+Week 4: RAG Deep Dive & Security (深度研發)
+[ ] D20: Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」
+
+[ ] D21: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問
+
+[ ] D22: Prompt Engineering: 設計 Gemini 的總結邏輯，確保只根據 SQL 資料回答
+
+[ ] D23: VPC Service Controls: 建立服務邊界，防止向量數據外洩
+
+[ ] D24: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
+
+Week 5: Monitoring, CI/CD & Final Review
+[ ] D25: Logging & Monitoring: 追蹤對話成功率、Token 消耗量與 SQL 查詢速度
+
+[ ] D26: Budget Alerts (預算警告) 與 Cloud Run 效能調優 (冷啟動優化)
+
+[ ] D27: CI/CD Pipeline (Cloud Build): 實現程式碼更動後自動部署至 Cloud Run
+
+[ ] D28-D30: 最終架構評審: 撰寫專案報告，比較「自建 RAG (方案 B)」與「Data Store (方案 A)」的成本與效能差異。
 
 ## 🛠 技術債與待辦事項
 - [ ] 測試 Cloud Run 是否能成功透過 VPC Connector 存取 Private IP 資源。
