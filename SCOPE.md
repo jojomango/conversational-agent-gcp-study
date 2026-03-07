@@ -56,7 +56,6 @@
 ## 🛠 技術債與待辦事項
 - [ ] 測試 Cloud Run 是否能成功透過 VPC Connector 存取 Private IP 資源。
 - [ ] 實作前端 Firebase Login 以換取進入 BFF 的 ID Token。
-- [ ] 設定 Cloud NAT 以固定爬蟲出口 IP。
 
 ---
 *Last Updated: 2026-03-05*

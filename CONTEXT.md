@@ -39,24 +39,23 @@ chat-bot/
 
 ## 5. 學習進度
 
-### ✅ 完成 (Week 1, Day 1–7)
+### ✅ 完成 (Week 1–2)
 - D1-D2: Resource Hierarchy (Org/Folder/Project)
 - D3-D4: IAM & Custom Roles
 - D5: Terraform Setup
 - D6: Networking (VPC, Subnets, Firewall)
 - D7: Cloud Run & VPC Connector & IAM Auth
+- D8: Cloud SQL (Private IP) & VPC Connection Test
+- D9: Cloud NAT & Cloud Router (固定爬蟲出口 IP)
 
-### 🔜 進行中 (Week 2, Day 8–14)
-- **D8**: Cloud SQL (Private IP) & VPC Connection Test ← **目前位置**
-- D9: Artifact Registry & Docker Packaging
-- D10: Cloud Run Jobs (Crawler)
+### 🔜 進行中 (Week 2)
+- **D10**: Cloud Run Jobs (Crawler) ← **目前位置**
 - D11: Cloud Scheduler
 - D12-13: Firebase Auth & Identity-Based Auth
-- D14: Cloud Run Optimization
+- D14: Artifact Registry & Docker Packaging
 
 ### 📅 計劃中 (Week 3–5)
 - D15: Secret Manager
-- D16: Cloud NAT (固定爬蟲出口 IP)
 - D17: Private Service Connect (Vertex AI)
 - D19: VPC Service Controls
 - D22-24: Logging, Monitoring, Budget Alerts
@@ -68,7 +67,6 @@ chat-bot/
 
 - [ ] 測試 Cloud Run → VPC Connector → Private IP 資源連通性
 - [ ] 實作前端 Firebase Login，換取 ID Token 打 BFF
-- [ ] 設定 Cloud NAT 固定爬蟲出口 IP
 
 ## 7. 雙環境策略
 

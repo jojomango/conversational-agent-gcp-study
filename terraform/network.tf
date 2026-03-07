@@ -110,4 +110,8 @@ resource "google_compute_router_nat" "nat_config" {
     name                    = google_compute_subnetwork.bff_subnet.id #讓bff連公開網路
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"] # subnet中的所有網段都可以連
   }
+  subnetwork {
+    name                    = google_compute_subnetwork.connector_subnet.id #讓爬蟲透過 connector 也能連外
+    source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
+  }
 }

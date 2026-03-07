@@ -41,7 +41,7 @@ chat-bot/
 | Firebase / IAM Auth | 身分驗證 | 📅 D12-13 |
 | Secret Manager | 憑證管理 | 📅 D15 |
 | Vertex AI | RAG / Gemini API | 📅 D25-26 |
-| VPC / Firewall / NAT | 網路安全 | ✅ Done (D6) |
+| VPC / Firewall / NAT | 網路安全 | ✅ Done (D6, D9) |
 | Terraform | IaC | ✅ Done (D5) |
 
 ## 🌍 雙環境說明
