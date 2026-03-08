@@ -7,7 +7,7 @@ resource "google_compute_global_address" "private_ip_alloc" {
   name          = "google-managed-services-range"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
-  prefix_length = 16  # 這會保留一個 /16 的區段
+  prefix_length = 16                                 # 這會保留一個 /16 的區段
   network       = google_compute_network.main_vpc.id # 本專案的 VPC
 }
 
@@ -26,18 +26,18 @@ resource "google_sql_database_instance" "postgres_instance" {
   name             = "bank-ai-db-instance"
   database_version = "POSTGRES_15" # 支援 pgvector 的版本
   region           = "asia-east1"
-  
+
   # 確保在私有連線建立後才開始建立資料庫
   depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
-    tier = "db-f1-micro" # 最小規格，省錢首選
-    disk_size         = 10
-    disk_type         = "PD_SSD"
-    disk_autoresize   = true
+    tier            = "db-f1-micro" # 最小規格，省錢首選
+    disk_size       = 10
+    disk_type       = "PD_SSD"
+    disk_autoresize = true
 
     ip_configuration {
-      ipv4_enabled    = false # 重要：關閉公網 IP
+      ipv4_enabled    = false                              # 重要：關閉公網 IP
       private_network = google_compute_network.main_vpc.id # 指定走內網
     }
 
@@ -48,7 +48,7 @@ resource "google_sql_database_instance" "postgres_instance" {
   }
 
   # 防止誤刪：實務上建議設為 true，但在 POC 練習時可設為 false 方便砍掉重練
-  deletion_protection = false 
+  deletion_protection = false
 }
 
 # 建立資料庫本體
@@ -73,6 +73,6 @@ resource "google_storage_bucket" "excel_storage" {
   location      = "ASIA-EAST1"
   force_destroy = true # 刪除 terraform 時一併刪除內容
 
-  public_access_prevention = "enforced" # 強制禁止公網存取
-  uniform_bucket_level_access = true    # 統一權限管理
+  public_access_prevention    = "enforced" # 強制禁止公網存取
+  uniform_bucket_level_access = true       # 統一權限管理
 }
