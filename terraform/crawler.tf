@@ -4,19 +4,22 @@ resource "google_cloud_run_v2_job" "crawler_job" {
   name     = "bank-crawler-job"
   location = "asia-east1"
 
-  # 連結我們建立的 Service Account (具有存取 GCS 的權限)
+  # 允許 Terraform 刪除此 Job，避免 make down 報錯
+  deletion_protection = false
+
   template {
-    service_account = google_service_account.chatbot_bff_sa.email
-
-    # 重要：加入 VPC Connector，否則爬蟲不會透過 NAT 使用固定 IP 出外網
-    vpc_access {
-      connector = google_vpc_access_connector.main_connector.id
-      egress    = "ALL_TRAFFIC" # 強制對外網路也走 VPC 隧道
-    }
-
     template {
+      # 連結我們建立的 Service Account (具有存取 GCS 的權限)
+      service_account = google_service_account.chatbot_bff_sa.email
+
+      # 重要：加入 VPC Connector，否則爬蟲不會透過 NAT 使用固定 IP 出外網
+      vpc_access {
+        connector = google_vpc_access_connector.main_connector.id
+        egress    = "ALL_TRAFFIC" # 強制對外網路也走 VPC 隧道
+      }
+
       containers {
-        image = "gcr.io/${var.project_id}/bank-crawler:v1" # 使用我們剛打包的 Image
+        image = "gcr.io/your-gcp-project-id/bank-crawler:latest" # 使用我們剛打包的 Image
 
         env {
           name  = "GCS_BUCKET_NAME"
@@ -34,9 +37,5 @@ resource "google_cloud_run_v2_job" "crawler_job" {
       # 設定執行超時 (爬蟲通常很快，5分鐘綽綽有餘)
       timeout = "300s"
     }
-  }
-
-  lifecycle {
-    ignore_changes = [template[0].template[0].containers[0].image]
   }
 }

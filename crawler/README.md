@@ -17,3 +17,7 @@ gcloud auth application-default login
 
 # 6. 執行你的爬蟲！
 python main.py
+
+# 7. 打包並上傳到 GCR(google cloud registry)
+gcloud builds submit --tag gcr.io/your-gcp-project-id/bank-crawler:latest
+

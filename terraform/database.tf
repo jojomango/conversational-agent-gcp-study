@@ -76,3 +76,10 @@ resource "google_storage_bucket" "excel_storage" {
   public_access_prevention    = "enforced" # 強制禁止公網存取
   uniform_bucket_level_access = true       # 統一權限管理
 }
+
+# 授權 Service Account 讀寫這個 Bucket
+resource "google_storage_bucket_iam_member" "sa_storage_access" {
+  bucket = google_storage_bucket.excel_storage.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.chatbot_bff_sa.email}"
+}

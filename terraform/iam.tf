@@ -3,7 +3,7 @@ resource "google_project_iam_custom_role" "cloudrun_customrole" {
   description = "具有cloud run的觀看和重啟權限"
   permissions = ["run.revisions.list", "run.services.get", "run.services.list", "run.services.update"]
   project     = "your-gcp-project-id"
-  role_id     = "Cloudrun.CustomRole"
+  role_id     = "Cloudrun.CustomRoleV2"
   title       = "BFF cloud run operator"
   stage       = "GA"
 }
