@@ -22,8 +22,7 @@
 ### Week 2: Deployment & Integration (Next 🔜)
 - [x] D8: Cloud SQL (Private IP) & GCS & VPC Connection Test
 - [x] D9: Cloud NAT & Cloud Router: 讓私有 Cloud Run 能透過固定 IP 訪問外部網站
-
-[ ] D10: Crawler 實作 (Cloud Run Job): 爬取 OWASP 官網內容並暫存至 GCS
+- [x] D10: Crawler 實作 (Cloud Run Job): 爬取 OWASP 官網內容並暫存至 GCS
 
 [ ] D11: Data Ingestion Pipeline: 讀取爬蟲資料 -> 呼叫 Embedding API -> 存入 Cloud SQL
 
