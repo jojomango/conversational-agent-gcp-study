@@ -15,5 +15,8 @@ db-on:
 	terraform -chdir=$(TF_DIR) apply -target=$(INSTANCE_TARGET) -auto-approve
 
 # 4. 全部刪除
+# 注意：GCS bucket (force_destroy=false) 內容會保留，作為向量資料庫重建的 source of truth
 down:
-	terraform -chdir=$(TF_DIR) destroy -auto-approve
+	@echo "[INFO] Destroying all resources. GCS bucket contents will be preserved (force_destroy=false)."
+	-terraform -chdir=$(TF_DIR) destroy -auto-approve
+	@echo "[INFO] Done. GCS bucket may still exist with crawler JSON data intact."

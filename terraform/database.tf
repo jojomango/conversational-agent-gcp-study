@@ -65,13 +65,15 @@ resource "google_sql_user" "db_user" {
 }
 
 # ==========================================
-# GCS Bucket (存放原始 Excel)
+# GCS Bucket (存放爬蟲 JSON，作為向量資料庫的 source of truth)
+# 注意：force_destroy = false，make down 時 bucket 內容會保留
+# 下次 make up 後可從此 bucket 重建向量資料，無需手動備份
 # ==========================================
 
 resource "google_storage_bucket" "excel_storage" {
   name          = "bank-ai-excel-assets-${google_sql_database_instance.postgres_instance.project}" # 加上 project ID 確保名稱唯一
   location      = "ASIA-EAST1"
-  force_destroy = true # 刪除 terraform 時一併刪除內容
+  force_destroy = false # 保留爬蟲資料，make down 後 bucket 依然存在
 
   public_access_prevention    = "enforced" # 強制禁止公網存取
   uniform_bucket_level_access = true       # 統一權限管理
@@ -81,5 +83,5 @@ resource "google_storage_bucket" "excel_storage" {
 resource "google_storage_bucket_iam_member" "sa_storage_access" {
   bucket = google_storage_bucket.excel_storage.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.chatbot_bff_sa.email}"
+  member = "serviceAccount:${data.google_service_account.chatbot_bff_sa.email}"
 }

@@ -10,7 +10,7 @@ resource "google_cloud_run_v2_job" "crawler_job" {
   template {
     template {
       # 連結我們建立的 Service Account (具有存取 GCS 的權限)
-      service_account = google_service_account.chatbot_bff_sa.email
+      service_account = data.google_service_account.chatbot_bff_sa.email
 
       # 重要：加入 VPC Connector，否則爬蟲不會透過 NAT 使用固定 IP 出外網
       vpc_access {

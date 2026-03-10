@@ -9,9 +9,9 @@ resource "google_project_iam_custom_role" "cloudrun_customrole" {
 }
 
 # service account for chatbot bff
-resource "google_service_account" "chatbot_bff_sa" {
-  account_id   = "chatbot-bff-sa"
-  description  = "用於 BFF 呼叫 Dialogflow 與讀寫 Cloud Storage"
-  display_name = "chatbot-bff-sa"
-  project      = "your-gcp-project-id"
+# 使用 data source：SA 已手動建立於 GCP，Terraform 只讀取不管理生命週期
+# make down 時不會刪除，避免 30 天 soft-delete 保護期造成重建失敗
+data "google_service_account" "chatbot_bff_sa" {
+  account_id = "chatbot-bff-sa"
+  project    = "your-gcp-project-id"
 }

@@ -11,7 +11,7 @@ resource "google_cloud_run_v2_service" "bff_service" {
 
   template {
     # 連結我們 Day 5 做的 Service Account
-    service_account = google_service_account.chatbot_bff_sa.email
+    service_account = data.google_service_account.chatbot_bff_sa.email
 
     vpc_access {
       # 連結你剛剛做好的隧道
