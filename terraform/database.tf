@@ -83,5 +83,5 @@ resource "google_storage_bucket" "excel_storage" {
 resource "google_storage_bucket_iam_member" "sa_storage_access" {
   bucket = google_storage_bucket.excel_storage.name
   role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${data.google_service_account.chatbot_bff_sa.email}"
+  member = "serviceAccount:${local.chatbot_bff_sa_email}"
 }

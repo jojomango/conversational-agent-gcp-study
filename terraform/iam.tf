@@ -8,10 +8,22 @@ resource "google_project_iam_custom_role" "cloudrun_customrole" {
   stage       = "GA"
 }
 
-# service account for chatbot bff
-# 使用 data source：SA 已手動建立於 GCP，Terraform 只讀取不管理生命週期
-# make down 時不會刪除，避免 30 天 soft-delete 保護期造成重建失敗
-data "google_service_account" "chatbot_bff_sa" {
-  account_id = "chatbot-bff-sa"
-  project    = "your-gcp-project-id"
+# service account for chatbot bff (managed outside Terraform)
+# 直接使用 email，避免 data source 需要 iam.serviceAccounts.get 權限
+locals {
+  chatbot_bff_sa_email = "chatbot-bff-sa@your-gcp-project-id.iam.gserviceaccount.com"
+}
+
+# 讓 Cloud Run Jobs 可透過 Cloud SQL connector 連線到資料庫
+resource "google_project_iam_member" "sa_cloudsql_client" {
+  project = "your-gcp-project-id"
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${local.chatbot_bff_sa_email}"
+}
+
+# 讓 ingestion job 可呼叫 Vertex AI Embedding 模型
+resource "google_project_iam_member" "sa_vertex_ai_user" {
+  project = "your-gcp-project-id"
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${local.chatbot_bff_sa_email}"
 }

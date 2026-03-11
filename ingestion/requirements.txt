@@ -1,0 +1,4 @@
+google-cloud-storage
+psycopg[binary]
+pgvector
+vertexai
