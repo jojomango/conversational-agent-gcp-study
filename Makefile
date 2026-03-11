@@ -1,5 +1,6 @@
 # 指向你的 terraform 檔案夾路徑
 TF_DIR=terraform
+DATA_TF_DIR=terraform-data
 INSTANCE_TARGET=google_sql_database_instance.postgres_instance
 PROJECT_ID?=your-gcp-project-id
 REGION?=asia-east1
@@ -9,6 +10,12 @@ GCS_BUCKET?=
 
 # 1. 啟動/部署全部資源
 up:
+	@echo "[INFO] Ensuring data state resources (GCS bucket) exist..."
+	terraform -chdir=$(DATA_TF_DIR) apply -auto-approve
+	@echo "[INFO] Detaching legacy bucket resources from infra state (if any)..."
+	-terraform -chdir=$(TF_DIR) state rm google_storage_bucket.excel_storage
+	-terraform -chdir=$(TF_DIR) state rm google_storage_bucket_iam_member.sa_storage_access
+	@echo "[INFO] Applying infra state resources..."
 	terraform -chdir=$(TF_DIR) apply -auto-approve
 
 # 2. 僅關閉資料庫 (節省成本)
@@ -20,11 +27,11 @@ db-on:
 	terraform -chdir=$(TF_DIR) apply -target=$(INSTANCE_TARGET) -auto-approve
 
 # 4. 全部刪除
-# 注意：GCS bucket (force_destroy=false) 內容會保留，作為向量資料庫重建的 source of truth
+# 注意：down 只刪 infra state；GCS bucket 由 terraform-data state 管理，會保留
 down:
-	@echo "[INFO] Destroying all resources. GCS bucket contents will be preserved (force_destroy=false)."
-	-terraform -chdir=$(TF_DIR) destroy -auto-approve
-	@echo "[INFO] Done. GCS bucket may still exist with crawler JSON data intact."
+	@echo "[INFO] Destroying infra resources only; data state resources are preserved."
+	terraform -chdir=$(TF_DIR) destroy -auto-approve
+	@echo "[INFO] Done. GCS bucket remains managed by $(DATA_TF_DIR)."
 
 # 5. 觸發雲端 crawler job，同步最新 raw 資料到 GCS
 crawl-sync:

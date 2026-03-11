@@ -23,7 +23,7 @@ resource "google_cloud_run_v2_job" "crawler_job" {
 
         env {
           name  = "GCS_BUCKET_NAME"
-          value = google_storage_bucket.excel_storage.name # 使用 database.tf 中的 bucket
+          value = data.google_storage_bucket.excel_storage.name # 使用 terraform-data state 管理的 bucket
         }
 
         resources {

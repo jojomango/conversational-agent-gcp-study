@@ -61,7 +61,7 @@ resource "google_cloud_run_v2_job" "vectorize_job" {
 
         env {
           name  = "GCS_BUCKET_NAME"
-          value = google_storage_bucket.excel_storage.name
+          value = data.google_storage_bucket.excel_storage.name
         }
 
         env {
