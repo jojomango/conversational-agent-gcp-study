@@ -9,10 +9,28 @@ chat-bot/
 ├── client/        # 前端：使用者自然語言介面
 ├── bff/           # Backend For Frontend：請求中介 & Auth
 ├── agent/         # Conversational Agent + 爬蟲 (OWASP)
-├── terraform/     # Infrastructure as Code (GCP 資源定義)
+├── terraform/     # Infrastructure state（可刪除的運算/網路/資料庫資源）
+├── terraform-data/# Data state（長期保留的資料資源，如 GCS bucket）
 ├── SCOPE.md       # GCP 學習計劃 & 進度追蹤
 └── CONTEXT.md     # AI 查詢用 Context 文件 (可直接貼給 Gemini)
 ```
+
+## Terraform State 策略（重要）
+
+本專案採用雙 state，避免 `make down` 被資料保留策略卡住：
+
+- `terraform/`：infra state
+  - 管理 Cloud Run、Cloud SQL、VPC、NAT、Firewall 等可重建資源
+  - `make down` 只會 destroy 這一層
+
+- `terraform-data/`：data state
+  - 管理長期保留資料資源（目前為 GCS bucket）
+  - 不受 `make down` 影響，作為向量資料重建來源（source of truth）
+
+這樣可確保：
+- 開發演練時可反覆清空 infra
+- 原始資料不會被誤刪
+- 成本與資料安全都可控
 
 ## 🏗 架構概覽
 
@@ -57,10 +75,10 @@ chat-bot/
 
 | 指令 | 用途 |
 |------|------|
-| `make up` | 啟動並部署全部基礎設施 |
+| `make up` | 先部署 `terraform-data`（資料層），再部署 `terraform`（基礎設施層） |
 | `make db-off` | 僅銷毀 Cloud SQL 資料庫 (保留其他網路與運算資源)，節省 DB 閒置費用 |
 | `make db-on` | 重新部署原本被銷毀的 Cloud SQL 資料庫 |
-| `make down` | 徹底銷毀所有資源 |
+| `make down` | 僅銷毀 `terraform` 管理的 infra 資源（保留 `terraform-data`） |
 
 ## 📄 詳細進度
 請見 [SCOPE.md](./SCOPE.md)

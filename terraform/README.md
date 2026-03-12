@@ -1,6 +1,7 @@
-# 🏗 Terraform — Infrastructure as Code
+# 🏗 Terraform — Infra State
 
-> GCP 資源皆透過 Terraform 管理，確保基礎設施可重現、可版控。
+> 本資料夾是「infra state」，管理可重建的運算/網路/資料庫資源。
+> 資料層（GCS bucket）已拆到 `terraform-data/`，避免 `make down` 因保留資料策略而中止。
 
 ## 檔案結構
 
@@ -10,11 +11,23 @@ terraform/
 ├── network.tf       # VPC, Subnets, Firewall, VPC Connector
 ├── iam.tf           # Service Account, IAM Roles
 ├── cloudrun.tf      # Cloud Run 服務定義
-└── (規劃中)
-    ├── cloudsql.tf  # Cloud SQL (Day 8)
-    ├── scheduler.tf # Cloud Scheduler (Day 11)
-    └── secrets.tf   # Secret Manager (Day 15)
+├── database.tf       # Cloud SQL, Private Service Access
+└── storage_ref.tf    # 讀取 terraform-data 管理的 bucket (data source)
 ```
+
+## 與 terraform-data 的關係
+
+- `terraform/`（本資料夾）:
+    - 會被 `make down` destroy
+    - 用於日常開發重建
+
+- `terraform-data/`（另一個 state）:
+    - 管理長期資料資源（目前為 GCS bucket）
+    - 不會被 `make down` 刪除
+
+Makefile 流程：
+- `make up`：先 apply `terraform-data/`，再 apply `terraform/`
+- `make down`：只 destroy `terraform/`
 
 ## 已完成資源
 
@@ -49,6 +62,9 @@ terraform plan
 
 # 套用
 terraform apply
+
+# 銷毀（僅 infra state）
+terraform destroy
 ```
 
 ## 進度
@@ -65,6 +81,7 @@ terraform apply
 ## 注意事項
 
 - `terraform.tfstate` 已加入 `.gitignore`（包含敏感資訊）
+- 若發生資源搬移（例如 bucket 從 infra state 拆到 data state），需用 `terraform state rm/import` 對齊 state
 - 個人環境：Owner 權限，可完整操作
 - 公司 Lab：需調整 `provider.tf` 中的 project ID，且組織層級資源無法修改
 
