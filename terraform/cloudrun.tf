@@ -1,7 +1,7 @@
 # 1. 定義 Cloud Run 服務 (BFF)
 resource "google_cloud_run_v2_service" "bff_service" {
   name     = "chatbot-bff"
-  location = "asia-east1"
+  location = var.region
 
   # 銀行級安全：只允許透過認證的請求 (取代 IAP 的方案)
   ingress = "INGRESS_TRAFFIC_ALL"
@@ -43,7 +43,7 @@ resource "google_cloud_run_v2_service_iam_member" "allow_me" {
 # 3. 定義 Cloud Run Job (Ingestion / Vectorize)
 resource "google_cloud_run_v2_job" "vectorize_job" {
   name     = "bank-vectorize-job"
-  location = "asia-east1"
+  location = var.region
 
   deletion_protection = false
 
@@ -57,7 +57,7 @@ resource "google_cloud_run_v2_job" "vectorize_job" {
       }
 
       containers {
-        image = "gcr.io/your-gcp-project-id/bank-vectorize:latest"
+        image = "gcr.io/${var.project_id}/bank-vectorize:latest"
 
         env {
           name  = "GCS_BUCKET_NAME"
@@ -98,12 +98,12 @@ resource "google_cloud_run_v2_job" "vectorize_job" {
 
         env {
           name  = "PROJECT_ID"
-          value = "your-gcp-project-id"
+          value = var.project_id
         }
 
         env {
           name  = "VERTEX_REGION"
-          value = "asia-east1"
+          value = var.region
         }
 
         env {

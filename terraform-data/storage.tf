@@ -1,10 +1,10 @@
 locals {
-  chatbot_bff_sa_email = "chatbot-bff-sa@your-gcp-project-id.iam.gserviceaccount.com"
+  chatbot_bff_sa_email = "${var.service_account_name}@${var.project_id}.iam.gserviceaccount.com"
 }
 
 resource "google_storage_bucket" "excel_storage" {
-  name          = "bank-ai-excel-assets-your-gcp-project-id"
-  location      = "ASIA-EAST1"
+  name          = var.assets_bucket_name
+  location      = var.assets_bucket_location
   force_destroy = false
 
   public_access_prevention    = "enforced"

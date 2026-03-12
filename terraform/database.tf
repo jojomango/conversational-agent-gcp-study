@@ -25,7 +25,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 resource "google_sql_database_instance" "postgres_instance" {
   name             = "bank-ai-db-instance"
   database_version = "POSTGRES_15" # 支援 pgvector 的版本
-  region           = "asia-east1"
+  region           = var.region
 
   # 確保在私有連線建立後才開始建立資料庫
   depends_on = [google_service_networking_connection.private_vpc_connection]

@@ -24,7 +24,7 @@
 - [x] D9: Cloud NAT & Cloud Router: 讓私有 Cloud Run 能透過固定 IP 訪問外部網站
 - [x] D10: Crawler 實作 (Cloud Run Job): 爬取 OWASP 官網內容並暫存至 GCS
 
-[ ] D11: Data Ingestion Pipeline: 讀取爬蟲資料 -> 呼叫 Embedding API -> 存入 Cloud SQL
+- [x] D11: Data Ingestion Pipeline: 讀取爬蟲資料 -> 呼叫 Embedding API -> 存入 Cloud SQL
 
 [ ] D12: Metadata 分類設計: 在入庫時自動標籤 (Category: A01-A10, Stack: Frontend/Backend)
 

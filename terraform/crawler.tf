@@ -2,7 +2,7 @@
 # 2. 定義 Cloud Run Job
 resource "google_cloud_run_v2_job" "crawler_job" {
   name     = "bank-crawler-job"
-  location = "asia-east1"
+  location = var.region
 
   # 允許 Terraform 刪除此 Job，避免 make down 報錯
   deletion_protection = false
@@ -19,7 +19,7 @@ resource "google_cloud_run_v2_job" "crawler_job" {
       }
 
       containers {
-        image = "gcr.io/your-gcp-project-id/bank-crawler:latest" # 使用我們剛打包的 Image
+        image = "gcr.io/${var.project_id}/bank-crawler:latest" # 使用我們剛打包的 Image
 
         env {
           name  = "GCS_BUCKET_NAME"

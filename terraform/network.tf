@@ -8,7 +8,7 @@ resource "google_compute_network" "main_vpc" {
 resource "google_compute_subnetwork" "bff_subnet" {
   name                     = "bff-subnet"
   ip_cidr_range            = "10.0.1.0/24"
-  region                   = "asia-east1" # 建議設在台灣
+  region                   = var.region # 建議設在台灣
   network                  = google_compute_network.main_vpc.id
   private_ip_google_access = true # 這就是關鍵！
 }
@@ -17,7 +17,7 @@ resource "google_compute_subnetwork" "bff_subnet" {
 resource "google_compute_subnetwork" "connector_subnet" {
   name          = "vpc-connector-subnet"
   ip_cidr_range = "10.8.0.0/28"
-  region        = "asia-east1"
+  region        = var.region
   network       = google_compute_network.main_vpc.id
 }
 
@@ -73,7 +73,7 @@ resource "google_compute_firewall" "allow_iap_proxy" {
 # VPC connector
 resource "google_vpc_access_connector" "main_connector" {
   name   = "vpc-connector"
-  region = "asia-east1"
+  region = var.region
   # 使用我們 Day 6 準備好的 10.8.0.0/28 子網
   subnet {
     name = google_compute_subnetwork.connector_subnet.name
@@ -86,13 +86,13 @@ resource "google_vpc_access_connector" "main_connector" {
 # 1. 申請一個靜態外部 IP (給 NAT 用)
 resource "google_compute_address" "nat_ip" {
   name   = "bank-ai-nat-ip"
-  region = "asia-east1"
+  region = var.region
 }
 
 # 2. 建立 Cloud Router
 resource "google_compute_router" "router" {
   name    = "bank-ai-router"
-  region  = "asia-east1"
+  region  = var.region
   network = google_compute_network.main_vpc.id
 }
 
@@ -100,7 +100,7 @@ resource "google_compute_router" "router" {
 resource "google_compute_router_nat" "nat_config" {
   name                   = "bank-ai-nat"
   router                 = google_compute_router.router.name
-  region                 = "asia-east1"
+  region                 = var.region
   nat_ip_allocate_option = "MANUAL_ONLY" # 我們要用手動指定的 IP
   nat_ips                = [google_compute_address.nat_ip.self_link]
 

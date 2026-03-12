@@ -1,4 +1,4 @@
 provider "google" {
-  project = "your-gcp-project-id" # 專案 ID
-  region  = "asia-east1"
+  project = var.project_id
+  region  = var.region
 }

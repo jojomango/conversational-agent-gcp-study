@@ -2,35 +2,45 @@
 TF_DIR=terraform
 DATA_TF_DIR=terraform-data
 INSTANCE_TARGET=google_sql_database_instance.postgres_instance
+
+# 環境設定（預設 dev）：可用 ENV=lab 切換到 env/lab.mk
+ENV?=dev
+ENV_FILE=env/$(ENV).mk
+ifneq ("$(wildcard $(ENV_FILE))","")
+include $(ENV_FILE)
+endif
+
 PROJECT_ID?=your-gcp-project-id
 REGION?=asia-east1
 CRAWLER_JOB?=bank-crawler-job
 VECTOR_JOB?=bank-vectorize-job
-GCS_BUCKET?=
+GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
+TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
+DATA_TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
 
 # 1. 啟動/部署全部資源
 up:
 	@echo "[INFO] Ensuring data state resources (GCS bucket) exist..."
-	terraform -chdir=$(DATA_TF_DIR) apply -auto-approve
+	terraform -chdir=$(DATA_TF_DIR) apply $(DATA_TF_ARGS) -auto-approve
 	@echo "[INFO] Detaching legacy bucket resources from infra state (if any)..."
 	-terraform -chdir=$(TF_DIR) state rm google_storage_bucket.excel_storage
 	-terraform -chdir=$(TF_DIR) state rm google_storage_bucket_iam_member.sa_storage_access
 	@echo "[INFO] Applying infra state resources..."
-	terraform -chdir=$(TF_DIR) apply -auto-approve
+	terraform -chdir=$(TF_DIR) apply $(TF_ARGS) -auto-approve
 
 # 2. 僅關閉資料庫 (節省成本)
 db-off:
-	terraform -chdir=$(TF_DIR) destroy -target=$(INSTANCE_TARGET) -auto-approve
+	terraform -chdir=$(TF_DIR) destroy $(TF_ARGS) -target=$(INSTANCE_TARGET) -auto-approve
 
 # 3. 重新開啟資料庫
 db-on:
-	terraform -chdir=$(TF_DIR) apply -target=$(INSTANCE_TARGET) -auto-approve
+	terraform -chdir=$(TF_DIR) apply $(TF_ARGS) -target=$(INSTANCE_TARGET) -auto-approve
 
 # 4. 全部刪除
 # 注意：down 只刪 infra state；GCS bucket 由 terraform-data state 管理，會保留
 down:
 	@echo "[INFO] Destroying infra resources only; data state resources are preserved."
-	terraform -chdir=$(TF_DIR) destroy -auto-approve
+	terraform -chdir=$(TF_DIR) destroy $(TF_ARGS) -auto-approve
 	@echo "[INFO] Done. GCS bucket remains managed by $(DATA_TF_DIR)."
 
 # 5. 觸發雲端 crawler job，同步最新 raw 資料到 GCS
