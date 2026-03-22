@@ -74,6 +74,9 @@ def chunk_text(text, size, overlap):
     return chunks
 
 
+# [設計假設] 向量資料庫（Cloud SQL instance）預期會隨 make down 被摧毀，make up 重建後再 reindex。
+# 因此 init_db 只需 CREATE TABLE IF NOT EXISTS，不需要處理欄位更新邏輯。
+# 若未來轉為長期維護模式（不砍 instance），需改用 ALTER TABLE ADD COLUMN IF NOT EXISTS 補欄位。
 def init_db(conn):
     with conn.cursor() as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
@@ -99,7 +102,9 @@ def init_db(conn):
                 chunk_index INT NOT NULL,
                 chunk_text TEXT NOT NULL,
                 chunk_hash TEXT UNIQUE NOT NULL,
-                token_count INT
+                token_count INT,
+                category TEXT,
+                stack TEXT
             )
             """
         )
@@ -156,6 +161,35 @@ def load_records_from_blob(blob):
     return []
 
 
+# [Stack 分類策略] 目前使用 rule-based 關鍵字比對來標記 frontend/backend/both。
+# 優點：快、免費、可控。缺點：關鍵字清單需手動維護，邊界案例判斷較弱。
+# 若分類效果不佳，可改用 LLM（如 Gemini）進行語意分類，但每筆 chunk 多一次 API 呼叫，費用較高。
+# 當前知識量小（A01-A10，約數十個 chunks），LLM 成本影響不大，可視品質需求決定是否升級。
+FRONTEND_KEYWORDS = [
+    "javascript", "browser", "dom", "html", "react", "angular", "vue",
+    "csrf token", "csp", "content security policy", "cookie", "xss",
+    "client-side", "client side", "front-end", "frontend",
+]
+BACKEND_KEYWORDS = [
+    "server", "api", "sql", "database", "injection", "authentication",
+    "session", "jwt", "python", "java", "node", "back-end", "backend",
+    "query", "parameterized", "stored procedure", "orm",
+]
+
+
+def classify_stack(text: str) -> str:
+    t = text.lower()
+    is_fe = any(kw in t for kw in FRONTEND_KEYWORDS)
+    is_be = any(kw in t for kw in BACKEND_KEYWORDS)
+    if is_fe and is_be:
+        return "both"
+    if is_fe:
+        return "frontend"
+    if is_be:
+        return "backend"
+    return "both"  # 預設：無明確關鍵字時視為兩者皆適用
+
+
 def upsert_document(cur, record, source_file, doc_hash):
     scraped_at = record.get("scraped_at")
     cur.execute(
@@ -183,15 +217,15 @@ def upsert_document(cur, record, source_file, doc_hash):
     return cur.fetchone()[0], False
 
 
-def upsert_chunk(cur, document_id, chunk_index, text, chunk_hash):
+def upsert_chunk(cur, document_id, chunk_index, text, chunk_hash, category, stack):
     cur.execute(
         """
-        INSERT INTO chunks (document_id, chunk_index, chunk_text, chunk_hash, token_count)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO chunks (document_id, chunk_index, chunk_text, chunk_hash, token_count, category, stack)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (chunk_hash) DO NOTHING
         RETURNING id
         """,
-        (document_id, chunk_index, text, chunk_hash, max(1, len(text) // 4)),
+        (document_id, chunk_index, text, chunk_hash, max(1, len(text) // 4), category, stack),
     )
     row = cur.fetchone()
     if row:
@@ -259,7 +293,9 @@ def run_ingestion():
 
                     for idx, chunk in enumerate(chunk_text(full_text, CHUNK_SIZE, CHUNK_OVERLAP)):
                         chunk_hash = make_hash(f"{doc_hash}|{idx}|{chunk}")
-                        chunk_id, is_new_chunk = upsert_chunk(cur, document_id, idx, chunk, chunk_hash)
+                        category = record.get("category")
+                        stack = classify_stack(chunk)
+                        chunk_id, is_new_chunk = upsert_chunk(cur, document_id, idx, chunk, chunk_hash, category, stack)
                         if is_new_chunk:
                             stats["new_chunks"] += 1
 
