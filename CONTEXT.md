@@ -2,7 +2,7 @@
 
 > **用途**：直接貼給 Gemini / ChatGPT 等 AI 工具使用，提供完整專案背景。
 > **維護**：每次有進度更新時同步更新此文件。
-> **Last Updated**: 2026-02-19
+> **Last Updated**: 2026-03-22
 
 ---
 
@@ -47,12 +47,13 @@ chat-bot/
 - D7: Cloud Run & VPC Connector & IAM Auth
 - D8: Cloud SQL (Private IP) & VPC Connection Test
 - D9: Cloud NAT & Cloud Router (固定爬蟲出口 IP)
+- D10: Cloud Run Jobs (Crawler)
+- D11: Data Ingestion Pipeline (GCS → Embedding → Cloud SQL pgvector)
+- D12: Metadata 分類 (category, stack rule-based)
+- D13: Artifact Registry 遷移 (GCR → AR, cleanup_policies, Makefile build-push)
 
-### 🔜 進行中 (Week 2)
-- **D10**: Cloud Run Jobs (Crawler) ← **目前位置**
-- D11: Cloud Scheduler
-- D12-13: Firebase Auth & Identity-Based Auth
-- D14: Artifact Registry & Docker Packaging
+### 🔜 進行中 (Week 3)
+- **D14**: Firebase Auth & Identity-Based Auth ← **目前位置**
 
 ### 📅 計劃中 (Week 3–5)
 - D15: Secret Manager

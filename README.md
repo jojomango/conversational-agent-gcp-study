@@ -53,10 +53,10 @@ chat-bot/
 |------|------|------|
 | Cloud Run | client / bff / agent 部署 | ✅ Done (D7) |
 | Cloud SQL (PostgreSQL) | 知識庫儲存 | ✅ Done (D8) |
-| Artifact Registry | Docker Image 管理 | 📅 D9 |
+| Artifact Registry | Docker Image 管理 | ✅ Done (D13) |
 | Cloud Run Jobs | 定期爬蟲 | 📅 D10 |
 | Cloud Scheduler | 自動化觸發 | 📅 D11 |
-| Firebase / IAM Auth | 身分驗證 | 📅 D12-13 |
+| Firebase / IAM Auth | 身分驗證 | 📅 D14 |
 | Secret Manager | 憑證管理 | 📅 D15 |
 | Vertex AI | RAG / Gemini API | 📅 D25-26 |
 | VPC / Firewall / NAT | 網路安全 | ✅ Done (D6, D9) |
@@ -84,4 +84,4 @@ chat-bot/
 請見 [SCOPE.md](./SCOPE.md)
 
 ---
-*Last Updated: 2026-02-23*
+*Last Updated: 2026-03-22*
