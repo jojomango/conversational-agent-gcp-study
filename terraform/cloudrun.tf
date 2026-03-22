@@ -57,7 +57,7 @@ resource "google_cloud_run_v2_job" "vectorize_job" {
       }
 
       containers {
-        image = "gcr.io/${var.project_id}/bank-vectorize:latest"
+        image = "asia-east1-docker.pkg.dev/${var.project_id}/bank-ai/bank-vectorize:latest"
 
         env {
           name  = "GCS_BUCKET_NAME"

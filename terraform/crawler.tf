@@ -19,7 +19,7 @@ resource "google_cloud_run_v2_job" "crawler_job" {
       }
 
       containers {
-        image = "gcr.io/${var.project_id}/bank-crawler:latest" # 使用我們剛打包的 Image
+        image = "asia-east1-docker.pkg.dev/${var.project_id}/bank-ai/bank-crawler:latest"
 
         env {
           name  = "GCS_BUCKET_NAME"

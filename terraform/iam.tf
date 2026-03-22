@@ -27,3 +27,10 @@ resource "google_project_iam_member" "sa_vertex_ai_user" {
   role    = "roles/aiplatform.user"
   member  = "serviceAccount:${local.chatbot_bff_sa_email}"
 }
+
+# 讓 Cloud Run Jobs 可從 Artifact Registry pull image
+resource "google_project_iam_member" "sa_ar_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${local.chatbot_bff_sa_email}"
+}
