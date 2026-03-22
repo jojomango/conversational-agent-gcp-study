@@ -12,6 +12,8 @@ endif
 
 PROJECT_ID?=your-gcp-project-id
 REGION?=asia-east1
+DATE?=$(shell date +%Y%m%d)
+AR_PREFIX=asia-east1-docker.pkg.dev/$(PROJECT_ID)/bank-ai
 CRAWLER_JOB?=bank-crawler-job
 VECTOR_JOB?=bank-vectorize-job
 GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
@@ -68,3 +70,15 @@ pipeline:
 pipeline-local:
 	@$(MAKE) sync-local-raw GCS_BUCKET=$(GCS_BUCKET)
 	@$(MAKE) reindex PROJECT_ID=$(PROJECT_ID) REGION=$(REGION) VECTOR_JOB=$(VECTOR_JOB)
+
+# 10. Build + push crawler image 到 Artifact Registry
+build-push-crawler:
+	docker build -t $(AR_PREFIX)/bank-crawler:latest -t $(AR_PREFIX)/bank-crawler:$(DATE) crawler/
+	docker push $(AR_PREFIX)/bank-crawler:latest
+	docker push $(AR_PREFIX)/bank-crawler:$(DATE)
+
+# 11. Build + push ingestion(vectorize) image 到 Artifact Registry
+build-push-vectorize:
+	docker build -t $(AR_PREFIX)/bank-vectorize:latest -t $(AR_PREFIX)/bank-vectorize:$(DATE) ingestion/
+	docker push $(AR_PREFIX)/bank-vectorize:latest
+	docker push $(AR_PREFIX)/bank-vectorize:$(DATE)
