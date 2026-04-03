@@ -1,5 +1,19 @@
 # 🖥 Client — 前端使用者介面
 
+## 本地開發設定
+
+Firebase Google Sign-In **不允許 `file://` 協定**，必須透過 HTTP 提供頁面：
+
+```bash
+# 在專案根目錄執行
+python3 -m http.server 5500 --directory client
+```
+
+接著用瀏覽器開啟 [http://localhost:5500](http://localhost:5500)。
+
+> `localhost:5500` 已預設在 BFF 的 `ALLOWED_ORIGINS` 白名單中。
+> BFF 也需同時在 `localhost:8080` 運行（見 bff/README.md）。
+
 ## 功能說明
 
 使用者透過此介面輸入自然語言問題，查詢 OWASP 等安全規範知識庫。

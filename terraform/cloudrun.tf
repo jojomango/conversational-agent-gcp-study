@@ -21,23 +21,33 @@ resource "google_cloud_run_v2_service" "bff_service" {
     }
 
     containers {
-      # TODO: 先用 Google 的範例 Hello 鏡像，之後再換成bff的image
-      image = "us-docker.pkg.dev/cloudrun/container/hello"
+      image = "asia-east1-docker.pkg.dev/${var.project_id}/bank-ai/bank-bff:latest"
 
       ports {
         container_port = 8080
+      }
+
+      env {
+        name  = "FIREBASE_PROJECT_ID"
+        value = var.firebase_project_id
+      }
+
+      # D15 改用 Secret Manager 注入；暫時允許本地 client 測試頁
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "http://localhost:5500,http://localhost:8000"
       }
     }
   }
 }
 
-# 2. 權限設定：只准你自己 (公司帳號) 訪問
-resource "google_cloud_run_v2_service_iam_member" "allow_me" {
+# 2. 權限設定：公開入口，由 BFF 應用層做 Firebase JWT 驗證與公司帳號限制
+# （取代原本只允許個人 Google 帳號的 IAM invoker 模式）
+resource "google_cloud_run_v2_service_iam_member" "allow_public" {
   location = google_cloud_run_v2_service.bff_service.location
   name     = google_cloud_run_v2_service.bff_service.name
   role     = "roles/run.invoker"
-  # TODO: 暫時設定為自己可以觸發cloud run, 之後要改成公司成員都可以觸發
-  member = "user:you@example.com"
+  member   = "allUsers"
 }
 
 # 3. 定義 Cloud Run Job (Ingestion / Vectorize)

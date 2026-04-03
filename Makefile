@@ -16,8 +16,9 @@ DATE?=$(shell date +%Y%m%d)
 AR_PREFIX=asia-east1-docker.pkg.dev/$(PROJECT_ID)/bank-ai
 CRAWLER_JOB?=bank-crawler-job
 VECTOR_JOB?=bank-vectorize-job
+FIREBASE_PROJECT_ID?=your-firebase-project-id
 GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
-TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
+TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID)
 DATA_TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
 
 # 1. 啟動/部署全部資源
@@ -82,3 +83,9 @@ build-push-vectorize:
 	docker build -t $(AR_PREFIX)/bank-vectorize:latest -t $(AR_PREFIX)/bank-vectorize:$(DATE) ingestion/
 	docker push $(AR_PREFIX)/bank-vectorize:latest
 	docker push $(AR_PREFIX)/bank-vectorize:$(DATE)
+
+# 12. Build + push BFF image 到 Artifact Registry
+build-push-bff:
+	docker build -t $(AR_PREFIX)/bank-bff:latest -t $(AR_PREFIX)/bank-bff:$(DATE) bff/
+	docker push $(AR_PREFIX)/bank-bff:latest
+	docker push $(AR_PREFIX)/bank-bff:$(DATE)

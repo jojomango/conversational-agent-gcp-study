@@ -1,5 +1,21 @@
 # 🔀 BFF — Backend For Frontend
 
+## 本地開發設定
+
+```bash
+# 1. 建立虛擬環境並安裝套件
+cd bff
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# 2. 啟動開發伺服器
+FIREBASE_PROJECT_ID=your-firebase-project-id uvicorn main:app --port 8080 --reload
+```
+
+> 注意：本地執行前須先完成 `gcloud auth application-default login`，
+> BFF 使用 ADC（Application Default Credentials）驗證 Firebase Token，不需要 SA key 檔。
+
 ## 功能說明
 
 BFF 是 Client 和 Agent 之間的中介層，負責：
@@ -14,11 +30,9 @@ Client  ──(ID Token + Query)──►  BFF  ──(Internal VPC)──►  A
 Client  ◄──────(AI Response)──  BFF  ◄────────────────────  Agent
 ```
 
-## 技術選型（待定）
+## 技術選型
 
-暫定選項：
-- **Python FastAPI**：輕量、與 GCP SDK 生態整合好
-- **Node.js Express**：前端開發者熟悉
+- **Python FastAPI** + **Uvicorn**（D14 確定）
 
 ## GCP 對應服務
 
@@ -44,13 +58,30 @@ POST /query
   Response: { "answer": "...", "sources": [...] }
 ```
 
+## API
+
+| Endpoint | Auth | 說明 |
+|---|---|---|
+| `GET /health` | 不需要 | 健康檢查 |
+| `POST /query` | Firebase ID Token | 查詢（D14 回 placeholder） |
+
+```
+POST /query
+  Header: Authorization: Bearer <FIREBASE_ID_TOKEN>
+  Body:   { "question": "OWASP SQL Injection 怎麼防範？" }
+  200:    { "user": "...", "question": "...", "answer": "..." }
+  401:    Token 缺失 / 無效 / 過期
+  403:    email 未驗證 或 非 ^\d{8}@cathaybk\.com\.tw$
+```
+
 ## 狀態
 
-- [ ] 框架選型確認
-- [ ] Firebase ID Token 驗證實作（Day 12-13）
-- [ ] `/query` endpoint 實作
-- [ ] Cloud Run 部署（Dockerfile）
-- [ ] Secret Manager 整合（Day 15）
+- [x] Python FastAPI 框架（D14）
+- [x] Firebase ID Token 驗證（D14）
+- [x] 公司帳號限制 `^\d{8}@cathaybk\.com\.tw$`（D14）
+- [x] Cloud Run 部署 Dockerfile（D14）
+- [ ] `/query` 串接 Agent（D15+）
+- [ ] Secret Manager 整合（D15）
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-04-03*
