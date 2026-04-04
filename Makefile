@@ -3,8 +3,8 @@ TF_DIR=terraform
 DATA_TF_DIR=terraform-data
 INSTANCE_TARGET=google_sql_database_instance.postgres_instance
 
-# 環境設定（預設 dev）：可用 ENV=lab 切換到 env/lab.mk
-ENV?=dev
+# 環境設定（預設 lab）：可用 ENV=dev 切換到 env/dev.mk
+ENV?=lab
 ENV_FILE=env/$(ENV).mk
 ifneq ("$(wildcard $(ENV_FILE))","")
 include $(ENV_FILE)

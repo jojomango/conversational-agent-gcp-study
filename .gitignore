@@ -1,5 +1,9 @@
 crawler/data/
 
+# Terraform state (含敏感資訊，不進 Git)
+**/*.tfstate
+**/*.tfstate.backup
+
 # Environments
 .env
 
