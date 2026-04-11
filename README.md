@@ -51,16 +51,22 @@ chat-bot/
 
 | 服務 | 用途 | 狀態 |
 |------|------|------|
-| Cloud Run | client / bff / agent 部署 | ✅ Done (D7) |
+| Cloud Run | BFF Service 部署 | ✅ Done (D14) |
 | Cloud SQL (PostgreSQL) | 知識庫儲存 | ✅ Done (D8) |
 | Artifact Registry | Docker Image 管理 | ✅ Done (D13) |
-| Cloud Run Jobs | 定期爬蟲 | 📅 D10 |
+| Cloud Run Jobs | Crawler / Vectorize Pipeline | ✅ Done (D10-D11) |
 | Cloud Scheduler | 自動化觸發 | 📅 D11 |
-| Firebase / IAM Auth | 身分驗證 | 📅 D14 |
+| Firebase / IAM Auth | 身分驗證 | ✅ Done (D14) |
 | Secret Manager | 憑證管理 | 📅 D15 |
 | Vertex AI | RAG / Gemini API | 📅 D25-26 |
 | VPC / Firewall / NAT | 網路安全 | ✅ Done (D6, D9) |
 | Terraform | IaC | ✅ Done (D5) |
+
+## 📍 當前狀態
+
+- D14 已完成：BFF 已改為 FastAPI + Firebase ID Token 驗證，Client 有本地測試頁可登入並呼叫 `/query`
+- 爬蟲與向量化流程已落地：`crawler/` 產 raw JSON，`ingestion/` 產 embedding 並寫入 Cloud SQL pgvector
+- Agent 服務尚未接上：BFF `/query` 目前仍回 placeholder，D15 先處理 Secret Manager 與密碼管理
 
 ## 🌍 雙環境說明
 
@@ -84,4 +90,4 @@ chat-bot/
 請見 [SCOPE.md](./SCOPE.md)
 
 ---
-*Last Updated: 2026-03-22*
+*Last Updated: 2026-04-11*

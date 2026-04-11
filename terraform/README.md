@@ -43,11 +43,19 @@ Makefile 流程：
 
 ### 🚀 Cloud Run (`cloudrun.tf`)
 - Service: `chatbot-bff`
-- 使用 placeholder image（`us-docker.pkg.dev/cloudrun/container/hello`）
+- 使用實際 BFF image（`asia-east1-docker.pkg.dev/<project>/bank-ai/bank-bff:latest`）
 - VPC Connector 綁定（egress: ALL_TRAFFIC）
-- IAM：僅允許指定 user 呼叫
+- 入口公開，由 BFF 應用層負責 Firebase JWT 驗證與公司帳號限制
 
-> **TODO**: 將 placeholder image 換成實際 BFF 的 Docker image（Day 9 後）
+### 🧪 Cloud Run Jobs (`crawler.tf` / `cloudrun.tf`)
+- `bank-crawler-job`：抓 OWASP 原始資料並寫入 GCS
+- `bank-vectorize-job`：讀取 GCS raw JSON，產 embedding 並寫入 Cloud SQL pgvector
+
+### 🗄 Cloud SQL (`database.tf`)
+- PostgreSQL 15（Private IP）
+- 啟用 Private Service Access
+- `chatbot_db` / `bff_user` 已建立
+- DB password 目前仍是暫時值，D15 將改為 Secret Manager
 
 ## 使用方式
 
@@ -73,9 +81,10 @@ terraform destroy
 |------|------|--------|
 | network.tf | ✅ Done | D6 |
 | iam.tf | ✅ Done | D3-4 |
-| cloudrun.tf | ✅ Done (placeholder) | D7 |
-| cloudsql.tf | 📅 規劃中 | D8 |
-| scheduler.tf | 📅 規劃中 | D11 |
+| cloudrun.tf | ✅ Done (BFF Service + Vectorize Job) | D14 |
+| crawler.tf | ✅ Done | D10 |
+| database.tf | ✅ Done | D8 |
+| scheduler.tf | 📅 尚未加入 | D11+ |
 | secrets.tf | 📅 規劃中 | D15 |
 
 ## 注意事項
@@ -83,7 +92,7 @@ terraform destroy
 - `terraform.tfstate` 已加入 `.gitignore`（包含敏感資訊）
 - 若發生資源搬移（例如 bucket 從 infra state 拆到 data state），需用 `terraform state rm/import` 對齊 state
 - 個人環境：Owner 權限，可完整操作
-- 公司 Lab：需調整 `provider.tf` 中的 project ID，且組織層級資源無法修改
+- 公司 Lab：主要透過 `env/lab.mk` 覆蓋 project 相關變數，且組織層級資源無法修改
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-04-11*

@@ -3,7 +3,7 @@
 ## 📌 專案願景
 建立一個銀行級安全的知識庫系統，允許員工以自然語言查詢 OWASP 等公開規範，並具備自動化爬蟲更新機制。
 
-## 🏗 當前架構 (Updated: Day 13)
+## 🏗 當前架構 (Updated: Day 14)
 - **運算平台**: Cloud Run (BFF / Client / Crawler)
 - **網路安全**: VPC, Private Subnets, VPC Access Connector (已完成)
 - **身分驗證**: Google IAM-based Auth (取代 IAP 以節省成本)
@@ -23,12 +23,10 @@
 - [x] D8: Cloud SQL (Private IP) & GCS & VPC Connection Test
 - [x] D9: Cloud NAT & Cloud Router: 讓私有 Cloud Run 能透過固定 IP 訪問外部網站
 - [x] D10: Crawler 實作 (Cloud Run Job): 爬取 OWASP 官網內容並暫存至 GCS
-
 - [x] D11: Data Ingestion Pipeline: 讀取爬蟲資料 -> 呼叫 Embedding API -> 存入 Cloud SQL
 - [x] D12: Metadata 分類設計: 在入庫時自動標籤 (Category: A01-A10, Stack: Frontend/Backend)
 - [x] D13: Artifact Registry 遷移: GCR → AR (asia-east1)，cleanup_policies keep 3，Makefile build-push targets
-
-[ ] D14: Firebase Auth 與身分驗證整合 (確保 Client 端安全)
+- [x] D14: Firebase Auth 與身分驗證整合 (確保 Client 端安全)
 
 ### Week 3: AI Logic & Conversational Agent (核心大腦) (Future 📅)
 - [ ] D15: Dialogflow CX (CA) 基礎: 建立 Agent、Start Page 與 OWASP 核心意圖
@@ -55,4 +53,4 @@
 - [ ] 實作前端 Firebase Login 以換取進入 BFF 的 ID Token。
 
 ---
-*Last Updated: 2026-03-22*
+*Last Updated: 2026-04-11*

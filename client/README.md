@@ -16,7 +16,8 @@ python3 -m http.server 5500 --directory client
 
 ## 功能說明
 
-使用者透過此介面輸入自然語言問題，查詢 OWASP 等安全規範知識庫。
+目前 `client/` 是一個 D14 測試頁，供本地驗證 Firebase Login、ID Token 取得與 BFF `/query` 串接。
+正式的產品化前端 UI 尚未開始實作。
 
 ## 資料流
 
@@ -25,7 +26,14 @@ python3 -m http.server 5500 --directory client
                 ←─────────────────────────── AI 回答
 ```
 
-## 技術選型（待定）
+## 當前實作
+
+- 單檔 `index.html` 測試頁
+- 使用 Firebase Web SDK（CDN compat 版）
+- 透過 `config.js` 載入 Firebase 設定
+- 可直接帶著 ID Token 呼叫 BFF `/query`
+
+## 技術選型（後續）
 
 暫定選項：
 - **Vue.js / React**：SPA，部署於 Cloud Run
@@ -38,7 +46,7 @@ python3 -m http.server 5500 --directory client
 | 部署 | Cloud Run 或 Firebase Hosting |
 | 身分驗證 | Firebase Auth → ID Token → BFF |
 
-## Auth 流程（規劃中）
+## Auth 流程（D14 已可本地驗證）
 
 ```
 1. 使用者在 Client 用 Firebase Login
@@ -49,10 +57,11 @@ python3 -m http.server 5500 --directory client
 
 ## 狀態
 
-- [ ] 框架選型（Day 12-13 前確認）
-- [ ] Firebase Auth 整合（Day 12-13）
-- [ ] UI 設計與實作（TBD）
+- [x] Firebase Auth 整合（D14 測試頁）
+- [x] 取得 ID Token 並呼叫 BFF `/query`
+- [ ] 正式前端框架選型（SPA / Hosting 策略）
+- [ ] UI 設計與實作
 - [ ] Cloud Run 部署設定
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-04-11*

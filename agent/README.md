@@ -2,9 +2,14 @@
 
 ## 功能說明
 
-本元件負責兩件事：
-1. **Conversational Agent**：接收來自 BFF 的自然語言查詢，搜尋知識庫並回答
-2. **Crawler (爬蟲)**：定期或手動觸發，爬取 OWASP 等安全規範並存入 Cloud SQL
+本目錄目前主要存放 Conversational Agent 的規劃與技術選型。
+
+實際已落地的資料管線分散在：
+1. `crawler/`：抓取 OWASP 原始內容並輸出 raw JSON
+2. `ingestion/`：對 raw JSON 做 chunk、embedding、寫入 Cloud SQL pgvector
+3. `bff/`：接收查詢，但目前 `/query` 還是 placeholder response
+
+也就是說，**Crawler 已實作，但 Agent API 服務尚未實作**。
 
 ## 技術選型比較
 
@@ -64,7 +69,7 @@
 
 ---
 
-## 目錄結構（規劃中）
+## 目錄結構（規劃草案）
 
 ```
 agent/
@@ -91,10 +96,10 @@ agent/
 
 ## 狀態
 
-- [ ] 技術選型確認（見上方比較）
-- [ ] 環境變數設計
-- [ ] Crawler 實作（Day 10）
-- [ ] Agent API 實作（Day 25-26）
+- [x] 技術選型方向：優先走自建 Gemini API + LangChain + pgvector
+- [ ] Agent API 專案結構落地
+- [ ] Retrieval / prompt / memory 設計
+- [ ] Agent API 實作與部署
 
 ---
-*Last Updated: 2026-02-19*
+*Last Updated: 2026-04-11*
