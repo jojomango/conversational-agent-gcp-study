@@ -1,6 +1,10 @@
 import os
 import re
+import uuid
 
+import google.auth
+import google.auth.transport.requests
+import httpx
 import firebase_admin
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,13 +14,15 @@ from firebase_admin import auth
 # ─── 環境變數 ────────────────────────────────────────────────────────────────
 
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
+CES_APP_NAME = os.getenv("CES_APP_NAME")          # projects/.../apps/...
+CES_DEPLOYMENT_NAME = os.getenv("CES_DEPLOYMENT_NAME")  # projects/.../deployments/...
 # 多個 origin 以逗號分隔，例如：http://localhost:5500,https://client-xxx-uc.a.run.app
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS", "http://localhost:5500,http://localhost:8000"
 ).split(",")
 
-# 公司帳號規則：八碼員編 + @cathaybk.com.tw
-_COMPANY_EMAIL_RE = re.compile(r"^\d{8}@cathaybk\.com\.tw$")
+# 公司帳號規則：八碼員編 + @cathaybk.com.tw 或 @lab.cathaybkdev.com.tw
+_COMPANY_EMAIL_RE = re.compile(r"^\d{8}@(cathaybk\.com\.tw|lab\.cathaybkdev\.com\.tw)$")
 
 # 開發用白名單：以逗號分隔的 email，例如 ALLOWED_EMAILS=you@gmail.com
 # 生產環境（Cloud Run）保持空值，只走公司 domain 規則
@@ -30,6 +36,17 @@ _ALLOWED_EMAILS: set[str] = {
 def _validate_env():
     if not FIREBASE_PROJECT_ID:
         raise RuntimeError("Missing required env var: FIREBASE_PROJECT_ID")
+
+
+# ─── CX Agent Studio 輔助 ──────────────────────────────────────────────────
+
+def _get_ces_token() -> str:
+    """取得 GCP ADC access token，用於呼叫 CES API。"""
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
+    )
+    credentials.refresh(google.auth.transport.requests.Request())
+    return credentials.token
 
 
 # ─── Firebase Admin SDK 初始化 ───────────────────────────────────────────────
@@ -97,12 +114,40 @@ def health():
 
 @app.post("/query")
 async def query(body: dict, claims: dict = Depends(verify_token)):
-    """
-    接受使用者問題，回傳 AI 回答。
-    D14: placeholder，Agent 串接留待 D15+ 實作。
-    """
+    """接受使用者問題，呼叫 CX Agent Studio runSession，回傳 AI 回答。"""
+    if not CES_APP_NAME or not CES_DEPLOYMENT_NAME:
+        raise HTTPException(status_code=503, detail="Agent not configured")
+
+    question = body.get("question", "").strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="question is required")
+
+    session_name = f"{CES_APP_NAME}/sessions/{uuid.uuid4()}"
+    url = f"https://ces.googleapis.com/v1beta/{session_name}:runSession"
+    payload = {
+        "config": {
+            "session": session_name,
+            "deployment": CES_DEPLOYMENT_NAME,
+        },
+        "inputs": [{"text": question}],
+    }
+
+    token = _get_ces_token()
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        resp = await client.post(
+            url,
+            json=payload,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Agent error: {resp.text}")
+
+    outputs = resp.json().get("outputs", [])
+    answer = outputs[0].get("text", "") if outputs else ""
+
     return {
         "user": claims["email"],
-        "question": body.get("question", ""),
-        "answer": "（Agent 尚未串接，D15+ 實作）",
+        "question": question,
+        "answer": answer,
     }
