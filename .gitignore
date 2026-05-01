@@ -6,6 +6,8 @@ crawler/data/
 
 # Environments
 .env
+env/dev.mk
+env/lab.mk
 
 # Firebase client config (含實際金鑰，請參考 client/config.example.js)
 client/config.js
@@ -16,4 +18,3 @@ __pycache__/
 *.pyo
 venv/
 .venv/
-env/

@@ -28,12 +28,12 @@
 - [x] D13: Artifact Registry 遷移: GCR → AR (asia-east1)，cleanup_policies keep 3，Makefile build-push targets
 - [x] D14: Firebase Auth 與身分驗證整合 (確保 Client 端安全)
 
-### Week 3: AI Logic & Conversational Agent (核心大腦) (Future 📅)
-- [ ] D15: Dialogflow CX (CA) 基礎: 建立 Agent、Start Page 與 OWASP 核心意圖
-- [ ] D16: Session Parameters: 設計 CA 的記憶功能 (例如：記得用戶正在問 XSS)
-- [ ] D17: OpenAPI Spec (Tool Call): 撰寫 Swagger 文件，定義 CA 如何呼叫 BFF
-- [ ] D18: BFF Webhook 實作: 開發 Cloud Run API 接收來自 CA 的請求
-- [ ] D19: Secret Manager: 安全儲存資料庫密碼與 API Keys，拒絕 Code 內寫死
+### Week 3: AI Logic & Conversational Agent (核心大腦) (In Progress 🚧)
+- [x] D15: CX Agent Studio 多層級架構: Root Agent + Subagents (General/Security)，意圖路由與 API Access 部署模式
+- [ ] D16: BFF 整合 CX Agent API: 實作 runSession/BidiRunSession，Session 管理與 Deployment ID 設定
+- [ ] D17: Secret Manager: 安全儲存 CX Agent 憑證、資料庫密碼與 API Keys
+- [ ] D18: Agent 進階功能: Session Parameters 與對話記憶 (Context Carry-over)
+- [ ] D19: Tool/Function Calling: 設計 Agent 呼叫 BFF Vector Search 的 Webhook
 
 ### Week 4: RAG Deep Dive & Security (深度研發) (Future 📅)
 - [ ] D20: Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」
@@ -53,4 +53,4 @@
 - [ ] 實作前端 Firebase Login 以換取進入 BFF 的 ID Token。
 
 ---
-*Last Updated: 2026-04-11*
+*Last Updated: 2026-04-28*
