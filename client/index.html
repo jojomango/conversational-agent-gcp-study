@@ -2,154 +2,416 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Bank AI — D14 測試頁</title>
+    <title>Bank AI — D16 多輪對話</title>
     <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
       body {
         font-family: sans-serif;
-        max-width: 640px;
-        margin: 40px auto;
-        padding: 0 16px;
+        background: #f0f2f5;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      button {
-        padding: 8px 16px;
-        margin: 4px 0;
-        cursor: pointer;
+
+      /* ── 登入頁 ── */
+      #page-login {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        padding: 48px 40px;
+        width: 360px;
+        text-align: center;
       }
-      textarea {
+      #page-login h1 {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+      }
+      #page-login p {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 32px;
+      }
+      #btn-login {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         width: 100%;
-        height: 80px;
-        margin: 4px 0;
-      }
-      pre {
-        background: #f4f4f4;
         padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.15s;
+      }
+      #btn-login:hover {
+        background: #f5f5f5;
+      }
+      #btn-login img {
+        width: 20px;
+        height: 20px;
+      }
+      #login-error {
+        color: #c00;
+        font-size: 0.85rem;
+        margin-top: 12px;
+        min-height: 1.2em;
+      }
+
+      /* ── 聊天頁 ── */
+      #page-chat {
+        display: none;
+        flex-direction: column;
+        width: 720px;
+        height: 90vh;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+      }
+
+      /* header */
+      .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        background: #1a73e8;
+        color: #fff;
+      }
+      .chat-header .title {
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+      .chat-header .meta {
+        font-size: 0.8rem;
+        opacity: 0.85;
+      }
+      #btn-logout {
+        padding: 6px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 6px;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      #btn-logout:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* BFF URL bar */
+      .url-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 0.82rem;
+        color: #555;
+      }
+      .url-bar input {
+        flex: 1;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
         border-radius: 4px;
+        font-size: 0.82rem;
+      }
+
+      /* messages */
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .msg {
+        display: flex;
+        gap: 10px;
+        max-width: 85%;
+      }
+      .msg.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+      }
+      .msg.agent {
+        align-self: flex-start;
+      }
+      .bubble {
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.93rem;
+        line-height: 1.5;
         white-space: pre-wrap;
-        word-break: break-all;
+        word-break: break-word;
       }
-      .label {
+      .msg.user .bubble {
+        background: #1a73e8;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+      }
+      .msg.agent .bubble {
+        background: #f1f3f4;
+        color: #333;
+        border-bottom-left-radius: 4px;
+      }
+      .msg.error .bubble {
+        background: #fdecea;
+        color: #c00;
+      }
+      .msg .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
         font-weight: bold;
-        margin-top: 16px;
+        flex-shrink: 0;
+        align-self: flex-end;
       }
-      .ok {
-        color: green;
+      .msg.user .avatar {
+        background: #1a73e8;
+        color: #fff;
       }
-      .err {
-        color: red;
+      .msg.agent .avatar {
+        background: #e8eaed;
+        color: #555;
+      }
+      .msg.loading .bubble {
+        color: #888;
+        font-style: italic;
+      }
+
+      /* input row */
+      .input-row {
+        display: flex;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid #e0e0e0;
+      }
+      #question {
+        flex: 1;
+        resize: none;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        line-height: 1.4;
+      }
+      #question:focus {
+        outline: none;
+        border-color: #1a73e8;
+      }
+      #btn-send {
+        padding: 0 20px;
+        background: #1a73e8;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: background 0.15s;
+      }
+      #btn-send:hover:not(:disabled) {
+        background: #1558b0;
+      }
+      #btn-send:disabled {
+        background: #b0c4de;
+        cursor: not-allowed;
       }
     </style>
   </head>
   <body>
-    <h2>Bank AI BFF — D14 Auth 測試頁</h2>
-
-    <!-- ========= Step 1: 登入 ========= -->
-    <div class="label">Step 1: 使用 Google 帳號登入</div>
-    <button id="btn-login">Sign in with Google</button>
-    <button id="btn-logout" style="display: none">Logout</button>
-    <div id="user-info"></div>
-
-    <!-- ========= Step 2: 查看 Token ========= -->
-    <div class="label">Step 2: 查看 ID Token（帶到 BFF 的那個）</div>
-    <button id="btn-token">取得 ID Token</button>
-    <pre id="token-display"></pre>
-
-    <!-- ========= Step 3: 打 BFF ========= -->
-    <div class="label">Step 3: 打 BFF /query</div>
-    <div>
-      BFF URL:
-      <input id="bff-url" value="http://localhost:8080" style="width: 300px" />
+    <!-- ══════════ 登入頁 ══════════ -->
+    <div id="page-login">
+      <h1>🏦 Bank AI</h1>
+      <p>OWASP 知識庫查詢助理</p>
+      <button id="btn-login">
+        <img
+          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          alt="Google"
+        />
+        使用 Google 帳號登入
+      </button>
+      <div id="login-error"></div>
     </div>
-    <textarea
-      id="question"
-      placeholder="輸入問題，例如：OWASP SQL Injection 怎麼防範？"
-    ></textarea>
-    <button id="btn-query">送出 /query</button>
-    <pre id="response-display"></pre>
 
-    <!-- ========= Firebase SDK (compat 版，支援 CDN) ========= -->
+    <!-- ══════════ 聊天頁 ══════════ -->
+    <div id="page-chat">
+      <div class="chat-header">
+        <div>
+          <div class="title">Bank AI — 資安知識助理</div>
+          <div class="meta" id="user-meta"></div>
+        </div>
+        <button id="btn-logout">登出</button>
+      </div>
+
+      <div class="url-bar">
+        BFF：<input id="bff-url" value="http://localhost:8080" />
+      </div>
+
+      <div id="messages"></div>
+
+      <div class="input-row">
+        <textarea
+          id="question"
+          rows="2"
+          placeholder="輸入問題，按 Enter 送出（Shift+Enter 換行）"
+        ></textarea>
+        <button id="btn-send">送出</button>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-    <!-- Firebase 設定從 config.js 載入（已加入 .gitignore，請參考 config.example.js） -->
     <script src="config.js"></script>
     <script>
       firebase.initializeApp(window.FIREBASE_CONFIG);
       const auth = firebase.auth();
       const provider = new firebase.auth.GoogleAuthProvider();
 
-      // ── UI refs ──
-      const userInfo = document.getElementById("user-info");
-      const tokenEl = document.getElementById("token-display");
-      const responseEl = document.getElementById("response-display");
-      const btnLogin = document.getElementById("btn-login");
-      const btnLogout = document.getElementById("btn-logout");
+      // ── State ──
+      let sessionId = null; // 登入後產生，整個對話期間固定
+
+      // ── 頁面切換 ──
+      function showLogin() {
+        document.getElementById("page-login").style.display = "";
+        document.getElementById("page-chat").style.display = "none";
+      }
+      function showChat(user) {
+        document.getElementById("page-login").style.display = "none";
+        document.getElementById("page-chat").style.display = "flex";
+        document.getElementById("user-meta").textContent =
+          `${user.email}　Session: ${sessionId}`;
+      }
+
+      // ── UUID v4（原生，無需套件）──
+      function newUUID() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+          (
+            c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+          ).toString(16),
+        );
+      }
 
       // ── Auth state ──
       auth.onAuthStateChanged((user) => {
         if (user) {
-          userInfo.innerHTML = `<span class="ok">✅ 已登入：${user.email}</span>`;
-          btnLogin.style.display = "none";
-          btnLogout.style.display = "";
+          if (!sessionId) sessionId = newUUID(); // 登入時產生，只產生一次
+          showChat(user);
         } else {
-          userInfo.innerHTML = `<span class="err">❌ 未登入</span>`;
-          btnLogin.style.display = "";
-          btnLogout.style.display = "none";
+          sessionId = null;
+          showLogin();
         }
       });
 
-      // ── Login ──
-      btnLogin.addEventListener("click", () => {
-        auth.signInWithPopup(provider).catch((e) => alert(e.message));
+      // ── 登入 ──
+      document.getElementById("btn-login").addEventListener("click", () => {
+        document.getElementById("login-error").textContent = "";
+        auth.signInWithPopup(provider).catch((e) => {
+          document.getElementById("login-error").textContent = e.message;
+        });
       });
 
-      // ── Logout ──
-      btnLogout.addEventListener("click", () => auth.signOut());
+      // ── 登出 ──
+      document.getElementById("btn-logout").addEventListener("click", () => {
+        auth.signOut();
+      });
 
-      // ── Get Token ──
-      document
-        .getElementById("btn-token")
-        .addEventListener("click", async () => {
-          const user = auth.currentUser;
-          if (!user) {
-            tokenEl.textContent = "尚未登入";
-            return;
-          }
-          const token = await user.getIdToken(/* forceRefresh= */ true);
-          tokenEl.textContent = token;
-        });
+      // ── 訊息泡泡 ──
+      function appendMessage(role, text) {
+        const msgs = document.getElementById("messages");
+        const div = document.createElement("div");
+        div.className = `msg ${role}`;
 
-      // ── Query BFF ──
-      document
-        .getElementById("btn-query")
-        .addEventListener("click", async () => {
-          const user = auth.currentUser;
-          if (!user) {
-            responseEl.textContent = "尚未登入";
-            return;
-          }
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = role === "user" ? "我" : "AI";
 
-          const bffUrl = document
-            .getElementById("bff-url")
-            .value.replace(/\/$/, "");
-          const question = document.getElementById("question").value;
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+
+        div.appendChild(avatar);
+        div.appendChild(bubble);
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+        return bubble; // 回傳以便更新 loading 狀態
+      }
+
+      // ── 送出問題 ──
+      async function sendQuestion() {
+        const questionEl = document.getElementById("question");
+        const question = questionEl.value.trim();
+        if (!question) return;
+
+        const user = auth.currentUser;
+        if (!user) {
+          alert("請先登入");
+          return;
+        }
+
+        const btnSend = document.getElementById("btn-send");
+        btnSend.disabled = true;
+        questionEl.value = "";
+
+        appendMessage("user", question);
+        const loadingBubble = appendMessage("loading", "⏳ 思考中…");
+
+        const bffUrl = document
+          .getElementById("bff-url")
+          .value.replace(/\/$/, "");
+        try {
           const token = await user.getIdToken(true);
+          const res = await fetch(`${bffUrl}/query`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ question, session_id: sessionId }),
+          });
+          const data = await res.json();
 
-          responseEl.textContent = "⏳ 送出中...";
-          try {
-            const res = await fetch(`${bffUrl}/query`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ question }),
-            });
-            const data = await res.json();
-            responseEl.textContent =
-              `HTTP ${res.status}\n\n` + JSON.stringify(data, null, 2);
-          } catch (e) {
-            responseEl.textContent = `Error: ${e.message}`;
+          if (!res.ok) {
+            loadingBubble.closest(".msg").className = "msg error";
+            loadingBubble.textContent = `錯誤 ${res.status}：${data.detail ?? JSON.stringify(data)}`;
+          } else {
+            loadingBubble.closest(".msg").className = "msg agent";
+            loadingBubble.textContent = data.answer || "（Agent 無回應）";
           }
-        });
+        } catch (e) {
+          loadingBubble.closest(".msg").className = "msg error";
+          loadingBubble.textContent = `網路錯誤：${e.message}`;
+        } finally {
+          btnSend.disabled = false;
+          questionEl.focus();
+        }
+      }
+
+      document
+        .getElementById("btn-send")
+        .addEventListener("click", sendQuestion);
+      document.getElementById("question").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+          e.preventDefault();
+          sendQuestion();
+        }
+      });
     </script>
   </body>
 </html>

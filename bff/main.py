@@ -112,6 +112,10 @@ def health():
     return {"status": "ok"}
 
 
+# session_id 只允許 URL-safe 字元，防止 path injection
+_SESSION_ID_RE = re.compile(r'^[\w\-]{1,128}$')
+
+
 @app.post("/query")
 async def query(body: dict, claims: dict = Depends(verify_token)):
     """接受使用者問題，呼叫 CX Agent Studio runSession，回傳 AI 回答。"""
@@ -122,8 +126,17 @@ async def query(body: dict, claims: dict = Depends(verify_token)):
     if not question:
         raise HTTPException(status_code=400, detail="question is required")
 
-    session_name = f"{CES_APP_NAME}/sessions/{uuid.uuid4()}"
-    url = f"https://ces.googleapis.com/v1beta/{session_name}:runSession"
+    # session_id 由 Client 維護以實現多輪對話；未提供時退回 BFF 產生（相容舊行為）
+    raw_session_id = body.get("session_id", "").strip()
+    if raw_session_id:
+        if not _SESSION_ID_RE.match(raw_session_id):
+            raise HTTPException(status_code=400, detail="invalid session_id format")
+        session_id = raw_session_id
+    else:
+        session_id = str(uuid.uuid4())
+
+    session_name = f"{CES_APP_NAME}/sessions/{session_id}"
+    url = f"https://ces.googleapis.com/v1/{session_name}:runSession"
     payload = {
         "config": {
             "session": session_name,
