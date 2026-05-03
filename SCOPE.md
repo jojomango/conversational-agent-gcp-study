@@ -30,27 +30,28 @@
 
 ### Week 3: AI Logic & Conversational Agent (核心大腦) (In Progress 🚧)
 - [x] D15: CX Agent Studio 多層級架構: Root Agent + Subagents (General/Security)，意圖路由與 API Access 部署模式
-- [ ] D16: BFF 整合 CX Agent API: 實作 runSession/BidiRunSession，Session 管理與 Deployment ID 設定
+- [ ] D16: BFF 整合 CX Agent API (runSession) + Client 聊天介面: Session ID 由 Client 維護實現多輪對話，Login 與 Chat 分頁
 - [ ] D17: Secret Manager: 安全儲存 CX Agent 憑證、資料庫密碼與 API Keys
 - [ ] D18: Agent 進階功能: Session Parameters 與對話記憶 (Context Carry-over)
 - [ ] D19: Tool/Function Calling: 設計 Agent 呼叫 BFF Vector Search 的 Webhook
+- [ ] D20: 串流對話體驗 (BidiRunSession): 改用 WebSocket 實作逐字輸出，Client 顯示打字效果
 
 ### Week 4: RAG Deep Dive & Security (深度研發) (Future 📅)
-- [ ] D20: Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」
-- [ ] D21: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問
-- [ ] D22: Prompt Engineering: 設計 Gemini 的總結邏輯，確保只根據 SQL 資料回答
-- [ ] D23: VPC Service Controls: 建立服務邊界，防止向量數據外洩
-- [ ] D24: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
+- [ ] D21: Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」
+- [ ] D22: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問
+- [ ] D23: Prompt Engineering: 設計 Gemini 的總結邏輯，確保只根據 SQL 資料回答
+- [ ] D24: VPC Service Controls: 建立服務邊界，防止向量數據外洩
+- [ ] D25: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
 
 ### Week 5: Monitoring, CI/CD & Final Review (Future 📅)
-- [ ] D25: Logging & Monitoring: 追蹤對話成功率、Token 消耗量與 SQL 查詢速度
-- [ ] D26: Budget Alerts (預算警告) 與 Cloud Run 效能調優 (冷啟動優化)
-- [ ] D27: CI/CD Pipeline (Cloud Build): 實現程式碼更動後自動部署至 Cloud Run
-- [ ] D28-D30: 最終架構評審: 撰寫專案報告，比較「自建 RAG (方案 B)」與「Data Store (方案 A)」的成本與效能差異。
+- [ ] D26: Logging & Monitoring: 追蹤對話成功率、Token 消耗量與 SQL 查詢速度
+- [ ] D27: Budget Alerts (預算警告) 與 Cloud Run 效能調優 (冷啟動優化)
+- [ ] D28: CI/CD Pipeline (Cloud Build): 實現程式碼更動後自動部署至 Cloud Run
+- [ ] D29-D30: 最終架構評審: 撰寫專案報告，比較「自建 RAG (方案 B)」與「Data Store (方案 A)」的成本與效能差異。
 
 ## 🛠 技術債與待辦事項
 - [ ] 測試 Cloud Run 是否能成功透過 VPC Connector 存取 Private IP 資源。
 - [ ] 實作前端 Firebase Login 以換取進入 BFF 的 ID Token。
 
 ---
-*Last Updated: 2026-04-28*
+*Last Updated: 2026-05-01*
