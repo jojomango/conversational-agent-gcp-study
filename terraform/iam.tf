@@ -34,3 +34,10 @@ resource "google_project_iam_member" "sa_ar_reader" {
   role    = "roles/artifactregistry.reader"
   member  = "serviceAccount:${local.chatbot_bff_sa_email}"
 }
+
+# D17: 讓 Cloud Run (BFF & Jobs) 可從 Secret Manager 讀取 secrets
+resource "google_project_iam_member" "sa_secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${local.chatbot_bff_sa_email}"
+}

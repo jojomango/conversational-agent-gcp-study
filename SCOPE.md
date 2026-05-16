@@ -31,7 +31,7 @@
 ### Week 3: AI Logic & Conversational Agent (核心大腦) (In Progress 🚧)
 - [x] D15: CX Agent Studio 多層級架構: Root Agent + Subagents (General/Security)，意圖路由與 API Access 部署模式
 - [x] D16: BFF 整合 CX Agent API (runSession) + Client 聊天介面: Session ID 由 Client 維護實現多輪對話，Login 與 Chat 分頁
-- [ ] D17: Secret Manager: 安全儲存 CX Agent 憑證、資料庫密碼與 API Keys
+- [x] D17: Secret Manager: 安全儲存 CX Agent 憑證、資料庫密碼與 API Keys
 - [ ] D18: Agent 進階功能: Session Parameters 與對話記憶 (Context Carry-over)
 - [ ] D19: Tool/Function Calling: 設計 Agent 呼叫 BFF Vector Search 的 Webhook
 - [ ] D20: 串流對話體驗 (BidiRunSession): 改用 WebSocket 實作逐字輸出，Client 顯示打字效果
@@ -51,7 +51,7 @@
 
 ## 🛠 技術債與待辦事項
 - [ ] 測試 Cloud Run 是否能成功透過 VPC Connector 存取 Private IP 資源。
-- [ ] 實作前端 Firebase Login 以換取進入 BFF 的 ID Token。
+- [ ] D17+: CX Agent 憑證改用 Terraform Variable，部署時自動從 env/*.mk 傳入（不需手動建立 secret versions）。
 
 ---
 *Last Updated: 2026-05-16*

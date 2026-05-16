@@ -52,12 +52,20 @@ Makefile 流程：
 - `bank-vectorize-job`：讀取 GCS raw JSON，產 embedding 並寫入 Cloud SQL pgvector
 
 ### 🗄 Cloud SQL (`database.tf`)
-- PostgreSQL 15（Private IP）
-- 啟用 Private Service Access
-- `chatbot_db` / `bff_user` 已建立
-- DB password 目前仍是暫時值，D15 將改為 Secret Manager
+- **[已註解]** PostgreSQL 15 + pgvector（保留作為未來自建 RAG 實驗參考）
+- 原因：專案改用 CX Agent Studio 托管知識庫
+- 要重新啟用：取消 database.tf 中的註解
+- 省錢：註解後節省約 $10/月
+
+### 🔐 Secret Manager (`secrets.tf`)
+- **[保留參考]** 未來若需真正的密碼管理（如 API Keys）可參考
+- D17+: CES 憑證改用 Terraform Variable，不使用 Secret Manager
+- 原因：ces_app_name/ces_deployment_name 只是配置資訊，不是密碼
+- 省錢：不使用 Secret Manager，節省 ~$0.24/月
 
 ## 使用方式
+
+### 基本操作
 
 ```bash
 cd terraform/
@@ -75,17 +83,49 @@ terraform apply
 terraform destroy
 ```
 
+### CX Agent 憑證設定
+
+D17+ 改用 **Terraform Variable** 傳遞 CX Agent 憑證（不使用 Secret Manager）：
+
+**部署流程**：
+
+```bash
+# 1. 確保 env/dev.mk 或 env/lab.mk 中有設定 CES 變數
+# env/lab.mk 範例：
+CES_APP_NAME=projects/YOUR_PROJECT/locations/us/apps/YOUR_APP_ID
+CES_DEPLOYMENT_NAME=projects/YOUR_PROJECT/locations/us/apps/YOUR_APP_ID/deployments/YOUR_DEPLOYMENT_ID
+
+# 2. 使用 Makefile 自動傳遞變數
+make up ENV=lab
+
+# 或手動傳遞
+cd terraform
+terraform apply \
+  -var=project_id=YOUR_PROJECT \
+  -var=ces_app_name="projects/..." \
+  -var=ces_deployment_name="projects/..."
+```
+
+**優點**：
+- ✅ 簡化部署流程（不需手動建立 secret versions）
+- ✅ 降低成本（不使用 Secret Manager）
+- ✅ 配置集中在 env/*.mk（與其他環境變數一致）
+
+**注意**：
+- 這些值會進入 Terraform state file（已 gitignore）
+- 本地開發仍用 `env/dev.mk`，不受影響
+
 ## 進度
 
 | 資源 | 狀態 | 對應天 |
 |------|------|--------|
 | network.tf | ✅ Done | D6 |
 | iam.tf | ✅ Done | D3-4 |
-| cloudrun.tf | ✅ Done (BFF Service + Vectorize Job) | D14 |
+| cloudrun.tf |⏸️ 保留參考ice + Vectorize Job) | D14 |
 | crawler.tf | ✅ Done | D10 |
-| database.tf | ✅ Done | D8 |
+| database.tf | ⏸️ Commented (保留參考) | D8 |
+| secrets.tf | ✅ Done (僅 CES 憑證) | D17 |
 | scheduler.tf | 📅 尚未加入 | D11+ |
-| secrets.tf | 📅 規劃中 | D15 |
 
 ## 注意事項
 
@@ -95,4 +135,4 @@ terraform destroy
 - 公司 Lab：主要透過 `env/lab.mk` 覆蓋 project 相關變數，且組織層級資源無法修改
 
 ---
-*Last Updated: 2026-04-11*
+*Last Updated: 2026-05-16*

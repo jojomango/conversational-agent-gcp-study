@@ -27,3 +27,15 @@ variable "firebase_project_id" {
   type        = string
   default     = "your-firebase-project-id"
 }
+
+variable "ces_app_name" {
+  description = "CX Agent Studio App Name（完整路徑：projects/.../locations/us/apps/...）"
+  type        = string
+  default     = ""
+}
+
+variable "ces_deployment_name" {
+  description = "CX Agent Studio Deployment Name（完整路徑：projects/.../deployments/...）"
+  type        = string
+  default     = ""
+}

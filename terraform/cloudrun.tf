@@ -32,10 +32,21 @@ resource "google_cloud_run_v2_service" "bff_service" {
         value = var.firebase_project_id
       }
 
-      # D15 改用 Secret Manager 注入；暫時允許本地 client 測試頁
+      # D17: 改用 Secret Manager 注入；暫時允許本地 client 測試頁
       env {
         name  = "ALLOWED_ORIGINS"
         value = "http://localhost:5500,http://localhost:8000"
+      }
+
+      # D17+: CX Agent 憑證改用 Terraform Variable（從 env/*.mk 傳入）
+      env {
+        name  = "CES_APP_NAME"
+        value = var.ces_app_name
+      }
+
+      env {
+        name  = "CES_DEPLOYMENT_NAME"
+        value = var.ces_deployment_name
       }
     }
   }
@@ -50,96 +61,111 @@ resource "google_cloud_run_v2_service_iam_member" "allow_public" {
   member   = "allUsers"
 }
 
-# 3. 定義 Cloud Run Job (Ingestion / Vectorize)
-resource "google_cloud_run_v2_job" "vectorize_job" {
-  name     = "bank-vectorize-job"
-  location = var.region
+# ==========================================
+# Cloud Run Job (Ingestion / Vectorize)
+# ==========================================
+#
+# [COMMENTED OUT - D17+]
+# 原因：專案改用 CX Agent Studio，不需要自建向量資料庫寫入流程。
+# 保留作為未來「自建 RAG」實驗參考（D21, D29-D30）。
+#
+# 要重新啟用：取消下方註解並確保 database.tf 也已取消註解。
 
-  deletion_protection = false
+# # 3. 定義 Cloud Run Job (Ingestion / Vectorize)
+# resource "google_cloud_run_v2_job" "vectorize_job" {
+#   name     = "bank-vectorize-job"
+#   location = var.region
 
-  template {
-    template {
-      service_account = local.chatbot_bff_sa_email
+#   deletion_protection = false
 
-      vpc_access {
-        connector = google_vpc_access_connector.main_connector.id
-        egress    = "ALL_TRAFFIC"
-      }
+#   template {
+#     template {
+#       service_account = local.chatbot_bff_sa_email
 
-      containers {
-        image = "asia-east1-docker.pkg.dev/${var.project_id}/bank-ai/bank-vectorize:latest"
+#       vpc_access {
+#         connector = google_vpc_access_connector.main_connector.id
+#         egress    = "ALL_TRAFFIC"
+#       }
 
-        env {
-          name  = "GCS_BUCKET_NAME"
-          value = data.google_storage_bucket.excel_storage.name
-        }
+#       containers {
+#         image = "asia-east1-docker.pkg.dev/${var.project_id}/bank-ai/bank-vectorize:latest"
 
-        env {
-          name  = "GCS_PREFIX"
-          value = "raw/"
-        }
+#         env {
+#           name  = "GCS_BUCKET_NAME"
+#           value = data.google_storage_bucket.excel_storage.name
+#         }
 
-        env {
-          name  = "DB_NAME"
-          value = google_sql_database.chatbot_db.name
-        }
+#         env {
+#           name  = "GCS_PREFIX"
+#           value = "raw/"
+#         }
 
-        env {
-          name  = "DB_USER"
-          value = google_sql_user.db_user.name
-        }
+#         env {
+#           name  = "DB_NAME"
+#           value = google_sql_database.chatbot_db.name
+#         }
 
-        # TODO: Day 15 改用 Secret Manager 注入
-        env {
-          name  = "DB_PASSWORD"
-          value = "your-password-here"
-        }
+#         env {
+#           name  = "DB_USER"
+#           value = google_sql_user.db_user.name
+#         }
 
-        # 使用 Cloud SQL Private IP 直連
-        env {
-          name  = "DB_HOST"
-          value = google_sql_database_instance.postgres_instance.private_ip_address
-        }
+#         # D17: 資料庫密碼從 Secret Manager 注入
+#         env {
+#           name = "DB_PASSWORD"
+#           value_source {
+#             secret_key_ref {
+#               secret  = google_secret_manager_secret.db_password.secret_id
+#               version = "latest"
+#             }
+#           }
+#         }
 
-        env {
-          name  = "DB_PORT"
-          value = "5432"
-        }
+#         # 使用 Cloud SQL Private IP 直連
+#         env {
+#           name  = "DB_HOST"
+#           value = google_sql_database_instance.postgres_instance.private_ip_address
+#         }
 
-        env {
-          name  = "PROJECT_ID"
-          value = var.project_id
-        }
+#         env {
+#           name  = "DB_PORT"
+#           value = "5432"
+#         }
 
-        env {
-          name  = "VERTEX_REGION"
-          value = var.region
-        }
+#         env {
+#           name  = "PROJECT_ID"
+#           value = var.project_id
+#         }
 
-        env {
-          name  = "EMBEDDING_MODEL"
-          value = "text-embedding-005"
-        }
+#         env {
+#           name  = "VERTEX_REGION"
+#           value = var.region
+#         }
 
-        env {
-          name  = "MAX_BLOBS"
-          value = "20"
-        }
+#         env {
+#           name  = "EMBEDDING_MODEL"
+#           value = "text-embedding-005"
+#         }
 
-        resources {
-          limits = {
-            cpu    = "1"
-            memory = "1Gi"
-          }
-        }
-      }
+#         env {
+#           name  = "MAX_BLOBS"
+#           value = "20"
+#         }
 
-      timeout = "900s"
-    }
-  }
+#         resources {
+#           limits = {
+#             cpu    = "1"
+#             memory = "1Gi"
+#           }
+#         }
+#       }
 
-  depends_on = [
-    google_project_iam_member.sa_cloudsql_client,
-    google_project_iam_member.sa_vertex_ai_user,
-  ]
-}
+#       timeout = "900s"
+#     }
+#   }
+
+#   depends_on = [
+#     google_project_iam_member.sa_cloudsql_client,
+#     google_project_iam_member.sa_vertex_ai_user,
+#   ]
+# }

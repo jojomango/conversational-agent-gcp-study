@@ -17,8 +17,10 @@ AR_PREFIX=asia-east1-docker.pkg.dev/$(PROJECT_ID)/bank-ai
 CRAWLER_JOB?=bank-crawler-job
 VECTOR_JOB?=bank-vectorize-job
 FIREBASE_PROJECT_ID?=your-firebase-project-id
+CES_APP_NAME?=
+CES_DEPLOYMENT_NAME?=
 GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
-TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID)
+TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID) -var=ces_app_name=$(CES_APP_NAME) -var=ces_deployment_name=$(CES_DEPLOYMENT_NAME)
 DATA_TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
 
 # 1. 啟動/部署全部資源
