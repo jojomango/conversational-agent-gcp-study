@@ -89,5 +89,9 @@ chat-bot/
 ## 📄 詳細進度
 請見 [SCOPE.md](./SCOPE.md)
 
+## 🛠️ 技術債與待辦事項
+- **Terraform IAM**: 當 BFF 的 `/vector-search` 端點建立後，需確認 CX Agent 是否有權限呼叫。可能需要為 BFF 的服務帳號 (`chatbot-bff-sa`) 新增 `roles/run.invoker` 權限，並將 CX Agent 的服務帳號加入允許清單。
+- **Terraform Cloud Run Ingress**: BFF 的 `/vector-search` 端點應設定為僅允許內部流量 (Ingress Control: Internal)，確保只有 GCP 內的服務 (如 CX Agent) 可以呼叫，增加安全性。
+
 ---
-*Last Updated: 2026-04-11*
+*Last Updated: 2026-05-25*

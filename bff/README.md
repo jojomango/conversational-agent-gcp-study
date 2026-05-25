@@ -1,5 +1,30 @@
 # 🔀 BFF — Backend For Frontend
 
+> ⚠️ **架構更新 (Day 18+)**: 隨著專案導入 Google CX Agent Studio，BFF 的角色已發生轉變。原有的部分規劃已封存，請參考下方最新說明。
+
+## 最新角色定位 (As of Day 18)
+
+BFF 現在是 **CX Agent 的後端工具 (Tool) 提供者**，主要職責是：
+1.  **身分驗證**: 維持不變，依然透過 Firebase ID Token 驗證使用者身分。
+2.  **代理請求**: 將 Client 的請求代理給 CX Agent Studio 的 `runSession` API。
+3.  **提供 RAG 工具**: 未來將提供一個 `/vector-search` 端點，讓 CX Agent 能透過 Tool Calling 的方式，回頭呼叫 BFF 來查詢 Cloud SQL 中的向量資料庫。
+
+## 最新資料流
+
+```
+Client  ──(ID Token + Query)──►  BFF  ──(runSession API)──►  CX Agent
+                                  ▲                           │
+                                  │ (Tool Call)               │
+                                  └────── /vector-search ─────┘
+```
+
+---
+
+## 🗄️ 封存：原始規劃 (Day 1-17)
+
+<details>
+<summary>點此展開原始規劃</summary>
+
 ## 本地開發設定
 
 ```bash
@@ -83,5 +108,7 @@ POST /query
 - [ ] `/query` 串接 Agent（D15+）
 - [ ] Secret Manager 整合（D15）
 
+</details>
+
 ---
-*Last Updated: 2026-04-03*
+*Last Updated: 2026-05-25*

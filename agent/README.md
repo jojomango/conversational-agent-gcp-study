@@ -1,4 +1,37 @@
-# 🤖 Agent — Conversational Agent & Crawler
+# 🤖 Agent — Conversational Agent
+
+> ⚠️ **架構更新 (Day 18+)**: 本專案已決定採用 **Google CX Agent Studio** 作為對話式 AI 的核心，取代原先自建 RAG 的方案。原技術選型比較已封存於下方。
+
+## CX Agent Studio 核心概念
+
+本專案將圍繞 CX Agent Studio 的三大核心功能進行開發：
+
+### 1. Tools (Function Calling)
+- **目的**: 讓 Agent 能夠呼叫外部 API 來獲取它自身不知道的資訊。
+- **本專案應用**:
+    - 將在 CX Agent Studio 中定義一個名為 `VectorSearch` 的 Tool。
+    - 這個 Tool 會指向我們 BFF 服務上的一個新端點 (例如 `/vector-search`)。
+    - 當 Agent 需要查詢 OWASP 知識庫時，它會呼叫這個 Tool，並將使用者的問題傳遞給 BFF。
+    - BFF 執行向量搜尋後，將結構化結果回傳給 Agent。
+
+### 2. Prompt Engineering
+- **目的**: 指導 Agent 如何思考、回應以及使用工具。這是控制 Agent 行為的核心。
+- **本專案應用**:
+    - **總結能力**: 我們會設計 Prompt，指示 Agent 在收到 `VectorSearch` Tool 的回傳結果後，必須用自然、專業的語言進行總結，並嚴格基於回傳的資料作答。
+    - **上下文理解**: 我們會引導 Agent 利用其內建的對話歷史來理解追問 (例如 "那前端呢？")，並在必要時調整後續 Tool 的呼叫參數。
+
+### 3. Session Management
+- **目的**: 在多輪對話中維持上下文和狀態。
+- **本專案應用**:
+    - **對話歷史**: 主要依賴 CX Agent 內建的對話記憶能力，透過 `session_id` 來串連每一輪的問答。
+    - **Session Parameters**: 實驗性地使用 Session Parameters 來儲存對話中的關鍵資訊 (例如，用戶當前關注的 OWASP 分類)，以便在後續的對話或 Tool 呼叫中加以利用。
+
+---
+
+## 🗄️ 封存：原始技術選型 (Day 1-17)
+
+<details>
+<summary>點此展開原始規劃</summary>
 
 ## 功能說明
 
@@ -67,37 +100,10 @@
 - 學完之後，再嘗試用 Vertex AI Agent Builder 重構，形成對比學習
 - 公司 Lab 環境可能沒有 Vertex AI Agent Builder 的完整權限
 
+</details>
+
 ---
-
-## 目錄結構（規劃草案）
-
-```
-agent/
-├── crawler/        # OWASP 爬蟲邏輯（Cloud Run Jobs）
-│   ├── main.py
-│   └── Dockerfile
-├── api/            # Agent API（Cloud Run Service）
-│   ├── main.py     # FastAPI endpoint
-│   ├── rag.py      # RAG pipeline (LangChain + Gemini)
-│   └── Dockerfile
-└── README.md
-```
-
-## GCP 對應服務
-
-| 功能 | GCP 服務 |
-|------|---------|
-| Agent API 部署 | Cloud Run (Service) |
-| 爬蟲執行 | Cloud Run (Jobs) |
-| 排程觸發 | Cloud Scheduler |
-| 向量/知識庫 | Cloud SQL + pgvector |
-| AI 推論 | Gemini API (Vertex AI) |
-| Secret 管理 | Secret Manager |
-
-## 狀態
-
-- [x] 技術選型方向：優先走自建 Gemini API + LangChain + pgvector
-- [ ] Agent API 專案結構落地
+*Last Updated: 2026-05-25*
 - [ ] Retrieval / prompt / memory 設計
 - [ ] Agent API 實作與部署
 
