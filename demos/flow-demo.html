@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>國泰世華銀行 — Dialogflow CX Flow 整合測試</title>
+    <style>
+      :root {
+        --cathay-green: #008154;
+        --cathay-gold: #fec00f;
+        --cathay-dark: #222222;
+        --cathay-light-bg: #f4f6f8;
+        --cathay-border: #e0e0e0;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--cathay-light-bg);
+        color: var(--cathay-dark);
+        line-height: 1.6;
+      }
+
+      header {
+        background-color: var(--cathay-green);
+        color: #ffffff;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-bottom: 5px solid var(--cathay-gold);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header-title h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .header-title p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 0.2rem;
+      }
+
+      .badge {
+        background-color: var(--cathay-gold);
+        color: var(--cathay-dark);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 0.8rem;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 2.5rem auto;
+        padding: 0 1.5rem;
+      }
+
+      .card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--cathay-border);
+      }
+
+      h2 {
+        color: var(--cathay-green);
+        border-left: 5px solid var(--cathay-gold);
+        padding-left: 0.75rem;
+        margin-bottom: 1.2rem;
+        font-size: 1.3rem;
+      }
+
+      p {
+        margin-bottom: 1rem;
+        color: #555555;
+      }
+
+      ol,
+      ul {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+      }
+
+      li {
+        margin-bottom: 0.5rem;
+        color: #444444;
+      }
+
+      .code-block {
+        background: #f8f9fa;
+        border: 1px solid var(--cathay-border);
+        border-radius: 6px;
+        padding: 1rem;
+        font-family:
+          SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 0.9rem;
+        color: #333333;
+        overflow-x: auto;
+        margin: 1rem 0;
+        position: relative;
+      }
+
+      .tip-box {
+        background-color: rgba(0, 129, 84, 0.05);
+        border-left: 4px solid var(--cathay-green);
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1.5rem 0;
+      }
+
+      .tip-box h4 {
+        color: var(--cathay-green);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-title">
+        <h1>國泰世華銀行 — 信用卡掛失對話流測試</h1>
+        <p>Cathay United Bank — Dialogflow CX Flow Integration Demo</p>
+      </div>
+      <span class="badge">D16 Presentation</span>
+    </header>
+
+    <!-- 
+      Dialogflow CX Messenger Component 
+      已替換為您提供的實際 Integration Code
+    -->
+    <link
+      rel="stylesheet"
+      href="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/themes/df-messenger-default.css"
+    />
+    <script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>
+    <df-messenger
+      location="asia-northeast1"
+      project-id="your-gcp-project-id"
+      agent-id="YOUR_AGENT_ID"
+      language-code="zh-tw"
+      max-query-length="-1"
+    >
+      <df-messenger-chat-bubble chat-title="Flow demo lost card">
+      </df-messenger-chat-bubble>
+    </df-messenger>
+    <style>
+      df-messenger {
+        z-index: 999;
+        position: fixed;
+        --df-messenger-font-color: #000;
+        --df-messenger-font-family: Google Sans;
+        --df-messenger-chat-background: #f3f6fc;
+        --df-messenger-message-user-background: #d3e3fd;
+        --df-messenger-message-bot-background: #fff;
+        bottom: 16px;
+        right: 16px;
+      }
+    </style>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const dfMessenger = document.querySelector("df-messenger");
+        if (!dfMessenger) return;
+
+        let hasRenderedWelcome = false;
+
+        const showWelcomeChips = () => {
+          if (hasRenderedWelcome) return;
+          hasRenderedWelcome = true;
+
+          // 使用 Dialogflow CX Messenger 內建 JavaScript 函式繪製迎賓晶片卡 (Suggestion Chips)
+          dfMessenger.renderCustomCard([
+            {
+              type: "info",
+              title: "國泰世華 智慧對話助理",
+              subtitle:
+                "您好！我是您的國泰隨行助理。今天想要體驗哪一項對話流與系統展示？",
+            },
+            {
+              type: "chips",
+              options: [
+                {
+                  text: "信用卡掛失",
+                },
+                {
+                  text: "查詢常見問題",
+                },
+              ],
+            },
+          ]);
+        };
+
+        // 方法一：頁面載入完成後，延遲 1.5 秒自動顯示迎賓晶片（確保 df-messenger 已完全初始化）
+        setTimeout(showWelcomeChips, 1500);
+
+        // 方法二：監聽使用者第一次輸入事件（如果用戶在晶片出現前就開始打字）
+        dfMessenger.addEventListener(
+          "df-user-input-entered",
+          function onFirstInput() {
+            if (!hasRenderedWelcome) {
+              showWelcomeChips();
+            }
+            dfMessenger.removeEventListener(
+              "df-user-input-entered",
+              onFirstInput,
+            );
+          },
+        );
+      });
+    </script>
+  </body>
+</html>
