@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>國泰世華銀行 — Dialogflow CX Flow 整合測試</title>
+    <title>Dialogflow CX Flow 整合測試</title>
     <style>
       :root {
         --cathay-green: #008154;
@@ -131,7 +131,7 @@
   <body>
     <header>
       <div class="header-title">
-        <h1>國泰世華銀行 — 信用卡掛失對話流測試</h1>
+        <h1>Dialogflow CX Flow 測試</h1>
         <p>Cathay United Bank — Dialogflow CX Flow Integration Demo</p>
       </div>
       <span class="badge">D16 Presentation</span>
@@ -219,6 +219,19 @@
             );
           },
         );
+
+        // 💡 解決 df-messenger v1 輸入框發送訊息後不會自動清空的 Bug
+        dfMessenger.addEventListener("df-user-input-entered", () => {
+          setTimeout(() => {
+            // 解析 df-messenger 的 shadowRoot 並將內部的 input 文字清空
+            const inputElement =
+              dfMessenger?.shadowRoot?.querySelector("input");
+            if (inputElement) {
+              inputElement.value = "";
+              inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          }, 30);
+        });
       });
     </script>
   </body>
