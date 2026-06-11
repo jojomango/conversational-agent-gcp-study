@@ -24,11 +24,18 @@ ALLOWED_ORIGINS = os.getenv(
 # 公司帳號規則：八碼員編 + @cathaybk.com.tw 或 @lab.cathaybkdev.com.tw
 _COMPANY_EMAIL_RE = re.compile(r"^\d{8}@(cathaybk\.com\.tw|lab\.cathaybkdev\.com\.tw)$")
 
+# Demo 用稱呼對照表：employee_id → display_name
+_DISPLAY_NAME_MAP: dict[str, str] = {
+    "00000001": "jojo",
+    "q9898989": "jojo-私人",
+}
+_DEFAULT_DISPLAY_NAME = "John Doe"
+
 # 開發用白名單：以逗號分隔的 email，例如 ALLOWED_EMAILS=you@gmail.com
 # 生產環境（Cloud Run）保持空值，只走公司 domain 規則
 _ALLOWED_EMAILS: set[str] = {
     e.strip().lower()
-    for e in os.getenv("ALLOWED_EMAILS", "").split(",")
+    for e in os.getenv("ALLOWED_EMAILS", "you@example.com").split(",")
     if e.strip()
 }
 
@@ -135,14 +142,18 @@ async def query(body: dict, claims: dict = Depends(verify_token)):
     else:
         session_id = str(uuid.uuid4())
 
+    employee_id = claims["email"].split("@")[0]
+    display_name = _DISPLAY_NAME_MAP.get(employee_id, _DEFAULT_DISPLAY_NAME)
+
     session_name = f"{CES_APP_NAME}/sessions/{session_id}"
     url = f"https://ces.googleapis.com/v1/{session_name}:runSession"
+    input_text = f"（系統提示：這位員工的稱呼是「{display_name}」）\n{question}"
     payload = {
         "config": {
             "session": session_name,
             "deployment": CES_DEPLOYMENT_NAME,
         },
-        "inputs": [{"text": question}],
+        "inputs": [{"text": input_text}],
     }
 
     token = _get_ces_token()
