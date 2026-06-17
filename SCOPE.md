@@ -32,9 +32,9 @@
 - [x] D15: CX Agent Studio 多層級架構: Root Agent + Subagents (General/Security)，意圖路由與 API Access 部署模式
 - [x] D16: BFF 整合 CX Agent API (runSession) + Client 聊天介面: Session ID 由 Client 維護實現多輪對話，Login 與 Chat 分頁
 - [x] D17: Secret Manager: 安全儲存 CX Agent 憑證、資料庫密碼與 API Keys
-- [x] D18: Agent Instruction 調優: General Agent 回轉 Root 路由 + Security Agent 強制優先使用 Data Store
+- [x] D18: Agent Instruction 優化: General Agent 回轉 Root 路由 + Security Agent 強制優先使用 Data Store
 - [-] D18 (原定計劃): Agent 進階功能: Session Parameters 與對話記憶 (Context Carry-over) ← 換用 Vertex AI Agent Engine 後，Session 記憶由平台原生處理，無需在 BFF 自行實作
-- [ ] D19: CES Agent 回歸測試
+- [x] D19: CES Agent 回歸測試
 - [-] D19 (原定計劃): Tool/Function Calling: 設計 Agent 呼叫 BFF Vector Search 的 Webhook ← 換用 Vertex AI + GCS Data Store 後，RAG 查詢由平台原生處理，BFF Webhook 繞路架構不再需要
 - [ ] D20: CES Log 分析使用者歷程: 研究對話 log 分析方法，了解路由成功率與常見查詢模式
 - [-] D20 (原定計劃): Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」← 換用 Vertex AI 後向量搜尋由平台處理，Cloud SQL pgvector 自建 SQL 查詢整層不再需要
