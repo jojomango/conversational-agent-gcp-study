@@ -38,7 +38,7 @@
 - [-] D19 (原定計劃): Tool/Function Calling: 設計 Agent 呼叫 BFF Vector Search 的 Webhook ← 換用 Vertex AI + GCS Data Store 後，RAG 查詢由平台原生處理，BFF Webhook 繞路架構不再需要
 - [x] D20: CES Log 分析使用者歷程: 研究對話 log 分析方法，了解路由成功率與常見查詢模式
 - [-] D20 (原定計劃): Vector Search 實作: 在 BFF 寫 SQL 指令進行「預過濾 (Metadata) + 向量比對」← 換用 Vertex AI 後向量搜尋由平台處理，Cloud SQL pgvector 自建 SQL 查詢整層不再需要
-- [ ] D21: 串流對話體驗 (BidiRunSession): 改用 WebSocket 實作逐字輸出，Client 顯示打字效果
+- [x] D21: 串流對話體驗 (BidiRunSession): 改用 WebSocket 實作逐字輸出，Client 顯示打字效果
 
 ### Week 4: RAG Deep Dive & Security (深度研發) (Future 📅)
 - [ ] D22: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問

@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <title>Bank AI — D16 多輪對話</title>
+    <title>Bank AI — D21 串流回覆</title>
     <style>
       * {
         box-sizing: border-box;
@@ -252,7 +252,7 @@
     <div id="page-chat">
       <div class="chat-header">
         <div>
-          <div class="title">Bank AI — 資安知識助理</div>
+          <div class="title">Bank AI — 資安知識助理（D21 串流）</div>
           <div class="meta" id="user-meta"></div>
         </div>
         <button id="btn-logout">登出</button>
@@ -353,7 +353,7 @@
         return bubble; // 回傳以便更新 loading 狀態
       }
 
-      // ── 送出問題 ──
+      // ── 送出問題（BidiRunSession SSE 串流）──
       async function sendQuestion() {
         const questionEl = document.getElementById("question");
         const question = questionEl.value.trim();
@@ -377,7 +377,7 @@
           .value.replace(/\/$/, "");
         try {
           const token = await user.getIdToken(true);
-          const res = await fetch(`${bffUrl}/query`, {
+          const res = await fetch(`${bffUrl}/stream`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -385,14 +385,50 @@
             },
             body: JSON.stringify({ question, session_id: sessionId }),
           });
-          const data = await res.json();
 
           if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
             loadingBubble.closest(".msg").className = "msg error";
             loadingBubble.textContent = `錯誤 ${res.status}：${data.detail ?? JSON.stringify(data)}`;
-          } else {
-            loadingBubble.closest(".msg").className = "msg agent";
-            loadingBubble.textContent = data.answer || "（Agent 無回應）";
+            return;
+          }
+
+          // Switch bubble to agent style immediately
+          loadingBubble.closest(".msg").className = "msg agent";
+          loadingBubble.textContent = "";
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split("\n\n");
+            buffer = parts.pop(); // keep incomplete trailing chunk
+
+            for (const part of parts) {
+              if (!part.startsWith("data: ")) continue;
+              let parsed;
+              try { parsed = JSON.parse(part.slice(6)); } catch { continue; }
+
+              if (parsed.text) {
+                loadingBubble.textContent += parsed.text;
+                // scroll to bottom as text arrives
+                const msgs = document.getElementById("messages");
+                msgs.scrollTop = msgs.scrollHeight;
+              } else if (parsed.error && !loadingBubble.textContent) {
+                // 只在尚未顯示任何文字時才顯示錯誤（避免覆蓋已收到的回覆）
+                loadingBubble.closest(".msg").className = "msg error";
+                loadingBubble.textContent = `Agent 錯誤：${parsed.error}`;
+              }
+            }
+          }
+
+          if (!loadingBubble.textContent) {
+            loadingBubble.textContent = "（Agent 無回應）";
           }
         } catch (e) {
           loadingBubble.closest(".msg").className = "msg error";

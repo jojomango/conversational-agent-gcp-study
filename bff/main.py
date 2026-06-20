@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import uuid
@@ -5,9 +6,11 @@ import uuid
 import google.auth
 import google.auth.transport.requests
 import httpx
+import websockets
 import firebase_admin
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth
 
@@ -175,3 +178,69 @@ async def query(body: dict, claims: dict = Depends(verify_token)):
         "question": question,
         "answer": answer,
     }
+
+
+def _ces_location() -> str:
+    """從 CES_APP_NAME 擷取 location，預設 us。"""
+    m = re.search(r"/locations/([^/]+)/", CES_APP_NAME or "")
+    return m.group(1) if m else "us"
+
+
+@app.post("/stream")
+async def stream(body: dict, claims: dict = Depends(verify_token)):
+    """用 BidiRunSession WebSocket 向 CES 送出問題，以 SSE 串流回傳 AI 回答。"""
+    if not CES_APP_NAME:
+        raise HTTPException(status_code=503, detail="Agent not configured")
+
+    question = body.get("question", "").strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="question is required")
+
+    raw_session_id = body.get("session_id", "").strip()
+    if raw_session_id and _SESSION_ID_RE.match(raw_session_id):
+        session_id = raw_session_id
+    else:
+        session_id = str(uuid.uuid4())
+
+    employee_id = claims["email"].split("@")[0]
+    display_name = _DISPLAY_NAME_MAP.get(employee_id, _DEFAULT_DISPLAY_NAME)
+    session_name = f"{CES_APP_NAME}/sessions/{session_id}"
+    input_text = f"（系統提示：這位員工的稱呼是「{display_name}」）\n{question}"
+
+    location = _ces_location()
+    ces_uri = (
+        f"wss://ces.googleapis.com/ws/google.cloud.ces.v1"
+        f".SessionService/BidiRunSession/locations/{location}"
+    )
+    gcp_token = _get_ces_token()
+
+    async def event_stream():
+        try:
+            async with websockets.connect(
+                ces_uri,
+                additional_headers={"Authorization": f"Bearer {gcp_token}"},
+            ) as ces_ws:
+                await ces_ws.send(json.dumps({"config": {"session": session_name}}))
+                await ces_ws.send(json.dumps({"realtimeInput": {"text": input_text}}))
+
+                try:
+                    async for raw in ces_ws:
+                        data = json.loads(raw)
+                        if "sessionOutput" in data:
+                            text = data["sessionOutput"].get("text", "")
+                            if text:
+                                yield f"data: {json.dumps({'text': text})}\n\n"
+                        elif "endSession" in data:
+                            yield f"data: {json.dumps({'end': True})}\n\n"
+                            break
+                except websockets.exceptions.ConnectionClosed:
+                    # CES 正常關閉 session，不視為錯誤
+                    pass
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
