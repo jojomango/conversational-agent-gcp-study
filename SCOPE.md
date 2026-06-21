@@ -41,7 +41,8 @@
 - [x] D21: 串流對話體驗 (BidiRunSession): 改用 WebSocket 實作逐字輸出，Client 顯示打字效果
 
 ### Week 4: RAG Deep Dive & Security (深度研發) (Future 📅)
-- [ ] D22: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問
+- [-] D22: Query Expansion: 使用 Gemini 處理「那前端呢？」這種帶有 Context 的追問
+- [x] D22: Agent安全性
 - [ ] D23: Prompt Engineering: 設計 Gemini 的總結邏輯，確保只根據 SQL 資料回答
 - [ ] D24: VPC Service Controls: 建立服務邊界，防止向量數據外洩
 - [ ] D25: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
