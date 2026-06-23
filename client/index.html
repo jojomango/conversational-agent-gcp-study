@@ -353,6 +353,22 @@
         return bubble; // 回傳以便更新 loading 狀態
       }
 
+      // ── Rate limit 倒數計時 ──
+      function startCountdown(seconds, btnSend, bubble) {
+        let remaining = seconds;
+        function tick() {
+          bubble.textContent = `請求太頻繁，請等待 ${remaining} 秒後重試。`;
+          if (remaining <= 0) {
+            bubble.textContent = "可以重新送出了。";
+            btnSend.disabled = false;
+            return;
+          }
+          remaining--;
+          setTimeout(tick, 1000);
+        }
+        tick();
+      }
+
       // ── 送出問題（BidiRunSession SSE 串流）──
       async function sendQuestion() {
         const questionEl = document.getElementById("question");
@@ -368,6 +384,7 @@
         const btnSend = document.getElementById("btn-send");
         btnSend.disabled = true;
         questionEl.value = "";
+        let rateLimitActive = false;
 
         appendMessage("user", question);
         const loadingBubble = appendMessage("loading", "⏳ 思考中…");
@@ -387,9 +404,18 @@
           });
 
           if (!res.ok) {
+            const retryAfter = res.headers.get("Retry-After");
             const data = await res.json().catch(() => ({}));
             loadingBubble.closest(".msg").className = "msg error";
-            loadingBubble.textContent = `錯誤 ${res.status}：${data.detail ?? JSON.stringify(data)}`;
+            if (res.status === 429 && retryAfter) {
+              rateLimitActive = true;
+              startCountdown(parseInt(retryAfter, 10), btnSend, loadingBubble);
+            } else if (res.status === 429) {
+              rateLimitActive = true;
+              startCountdown(5, btnSend, loadingBubble);
+            } else {
+              loadingBubble.textContent = `錯誤 ${res.status}：${data.detail ?? JSON.stringify(data)}`;
+            }
             return;
           }
 
@@ -434,7 +460,7 @@
           loadingBubble.closest(".msg").className = "msg error";
           loadingBubble.textContent = `網路錯誤：${e.message}`;
         } finally {
-          btnSend.disabled = false;
+          if (!rateLimitActive) btnSend.disabled = false;
           questionEl.focus();
         }
       }
