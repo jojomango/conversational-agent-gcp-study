@@ -2,6 +2,7 @@ import json
 import os
 import re
 import uuid
+from datetime import datetime, timezone
 
 import google.auth
 import google.auth.transport.requests
@@ -37,6 +38,18 @@ _DISPLAY_NAME_MAP: dict[str, str] = {
     "q9898989": "jojo-私人",
 }
 _DEFAULT_DISPLAY_NAME = "John Doe"
+
+# ─── Audit Log ───────────────────────────────────────────────────────────────
+# Cloud Run stdout → Cloud Logging，結構化 JSON 讓 BigQuery 可直接查詢
+
+def _audit(severity: str, event: str, **kwargs) -> None:
+    print(json.dumps({
+        "severity": severity,
+        "event": event,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        **kwargs,
+    }))
+
 
 # ─── Rate Limiter ────────────────────────────────────────────────────────────
 # 以驗證後的 email 作為 key；verify_token 執行後會把 email 存入 request.state
@@ -90,8 +103,12 @@ _validate_env()
 _init_firebase()
 
 app = FastAPI(title="Bank AI BFF", version="0.1.0")
+async def _rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    _audit("WARNING", "rate_limit", email=getattr(request.state, "user_email", "unknown"))
+    return _rate_limit_exceeded_handler(request, exc)
+
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -114,19 +131,24 @@ async def verify_token(
     2. 確認 email 已驗證
     3. 確認符合公司帳號規則：^\d{8}@cathaybk\.com\.tw$
     """
+    ip = request.client.host if request.client else "unknown"
     token = credentials.credentials
     try:
         claims = auth.verify_id_token(token)
     except auth.ExpiredIdTokenError:
+        _audit("WARNING", "auth_rejected", reason="token_expired", ip=ip)
         raise HTTPException(status_code=401, detail="Token expired")
     except Exception:
+        _audit("WARNING", "auth_rejected", reason="invalid_token", ip=ip)
         raise HTTPException(status_code=401, detail="Invalid token")
 
     if not claims.get("email_verified", False):
+        _audit("WARNING", "auth_rejected", reason="email_not_verified", ip=ip)
         raise HTTPException(status_code=403, detail="Email not verified")
 
     email: str = claims.get("email", "").lower()
     if email not in _ALLOWED_EMAILS and not _COMPANY_EMAIL_RE.match(email):
+        _audit("WARNING", "auth_rejected", reason="unauthorized_account", email=email, ip=ip)
         raise HTTPException(status_code=403, detail="Unauthorized account")
 
     request.state.user_email = email
@@ -225,8 +247,10 @@ async def stream(request: Request, body: dict, claims: dict = Depends(verify_tok
 
     user_email = claims["email"].lower()
     if _active_streams.get(user_email, 0) >= 1:
+        _audit("WARNING", "concurrency_limit", email=user_email)
         raise HTTPException(status_code=429, detail="已有進行中的對話，請等待回覆後再送出")
     _active_streams[user_email] = _active_streams.get(user_email, 0) + 1
+    _audit("INFO", "stream_request", email=user_email, session_id=session_id)
 
     employee_id = claims["email"].split("@")[0]
     display_name = _DISPLAY_NAME_MAP.get(employee_id, _DEFAULT_DISPLAY_NAME)
