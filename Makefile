@@ -20,7 +20,11 @@ FIREBASE_PROJECT_ID?=your-firebase-project-id
 CES_APP_NAME?=
 CES_DEPLOYMENT_NAME?=
 GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
-TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID) -var=ces_app_name=$(CES_APP_NAME) -var=ces_deployment_name=$(CES_DEPLOYMENT_NAME)
+# D24: VPC SC（執行 gcloud organizations list 取得 ORG_ID；DEVELOPER_IP 填你的出口 IP；PROJECT_NUMBER 執行 gcloud projects list 取得）
+ORG_ID?=
+DEVELOPER_IP?=
+PROJECT_NUMBER?=
+TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID) -var=ces_app_name=$(CES_APP_NAME) -var=ces_deployment_name=$(CES_DEPLOYMENT_NAME) -var=org_id=$(ORG_ID) -var='developer_ip_ranges=["$(DEVELOPER_IP)"]' -var=project_number=$(PROJECT_NUMBER)
 DATA_TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
 
 # 1. 啟動/部署全部資源
@@ -91,3 +95,12 @@ build-push-bff:
 	docker build -t $(AR_PREFIX)/bank-bff:latest -t $(AR_PREFIX)/bank-bff:$(DATE) bff/
 	docker push $(AR_PREFIX)/bank-bff:latest
 	docker push $(AR_PREFIX)/bank-bff:$(DATE)
+
+# 13. D24: 查看 VPC-SC dry-run 模式下被記錄的違規請求
+# 在切換成 enforced 前先用此指令確認哪些請求會被擋
+vpc-sc-dryrun-check:
+	gcloud logging read \
+	  'protoPayload.metadata."@type"="type.googleapis.com/google.cloud.audit.VpcServiceControlAuditMetadata"' \
+	  --project=$(PROJECT_ID) \
+	  --limit=20 \
+	  --format="table(timestamp,protoPayload.authenticationInfo.principalEmail,protoPayload.serviceName,protoPayload.methodName)"

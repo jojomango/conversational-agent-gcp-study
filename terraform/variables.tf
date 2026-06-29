@@ -39,3 +39,22 @@ variable "ces_deployment_name" {
   type        = string
   default     = ""
 }
+
+# D24: VPC Service Controls
+variable "org_id" {
+  description = "GCP Organization ID（執行 gcloud organizations list 取得）"
+  type        = string
+  default     = ""
+}
+
+variable "developer_ip_ranges" {
+  description = "開發者 IP 清單，允許從邊界外呼叫受保護的 GCP API（格式：CIDR，例如 1.2.3.4/32）"
+  type        = list(string)
+  default     = []
+}
+
+variable "project_number" {
+  description = "GCP Project Number（執行 gcloud projects list 取得，Service Perimeter resources 欄位需要數字 ID）"
+  type        = string
+  default     = ""
+}
