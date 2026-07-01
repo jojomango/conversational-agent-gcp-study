@@ -12,6 +12,8 @@ terraform/
 ├── iam.tf           # Service Account, IAM Roles
 ├── cloudrun.tf      # Cloud Run 服務定義
 ├── database.tf       # Cloud SQL, Private Service Access
+├── vpc_sc.tf         # VPC Service Controls (Service Perimeter)
+├── psc.tf            # Private Service Connect (私有存取 Google APIs)
 └── storage_ref.tf    # 讀取 terraform-data 管理的 bucket (data source)
 ```
 
@@ -126,6 +128,8 @@ terraform apply \
 | database.tf | ⏸️ Commented (保留參考) | D8 |
 | secrets.tf | ✅ Done (僅 CES 憑證) | D17 |
 | scheduler.tf | 📅 尚未加入 | D11+ |
+| vpc_sc.tf | ✅ Done (dry-run) | D24 |
+| psc.tf | ✅ Done (未 apply，待實測) | D25 |
 
 ## 注意事項
 

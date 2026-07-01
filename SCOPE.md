@@ -46,7 +46,7 @@
 - [x] D23 — BFF Rate Limiting + Audit Log
 - [-] D23: Prompt Engineering: 設計 Gemini 的總結邏輯，確保只根據 SQL 資料回答
 - [x] D24: VPC Service Controls: 建立服務邊界，防止向量數據外洩
-- [ ] D25: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
+- [x] D25: Private Service Connect (PSC): 嘗試以更私密的方式存取 Vertex AI
 
 ### Week 5: Monitoring, CI/CD & Final Review (Future 📅)
 - [ ] D26: Logging & Monitoring: 追蹤對話成功率、Token 消耗量與 SQL 查詢速度
