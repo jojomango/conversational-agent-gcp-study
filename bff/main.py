@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -201,19 +202,32 @@ async def query(request: Request, body: dict, claims: dict = Depends(verify_toke
         "inputs": [{"text": input_text}],
     }
 
+    started_at = time.monotonic()
     token = _get_ces_token()
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.post(
-            url,
-            json=payload,
-            headers={"Authorization": f"Bearer {token}"},
-        )
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                url,
+                json=payload,
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    except httpx.TimeoutException:
+        _audit("ERROR", "query_failed", email=claims["email"], session_id=session_id,
+               reason="timeout", latency_ms=int((time.monotonic() - started_at) * 1000))
+        raise HTTPException(status_code=504, detail="Agent request timed out")
+
+    latency_ms = int((time.monotonic() - started_at) * 1000)
 
     if resp.status_code != 200:
+        _audit("ERROR", "query_failed", email=claims["email"], session_id=session_id,
+               reason="agent_error", status_code=resp.status_code, latency_ms=latency_ms)
         raise HTTPException(status_code=502, detail=f"Agent error: {resp.text}")
 
     outputs = resp.json().get("outputs", [])
     answer = outputs[0].get("text", "") if outputs else ""
+
+    _audit("INFO", "query_success", email=claims["email"], session_id=session_id,
+           latency_ms=latency_ms)
 
     return {
         "user": claims["email"],
@@ -265,6 +279,7 @@ async def stream(request: Request, body: dict, claims: dict = Depends(verify_tok
     gcp_token = _get_ces_token()
 
     async def event_stream():
+        started_at = time.monotonic()
         try:
             async with websockets.connect(
                 ces_uri,
@@ -286,7 +301,11 @@ async def stream(request: Request, body: dict, claims: dict = Depends(verify_tok
                 except websockets.exceptions.ConnectionClosed:
                     # CES 正常關閉 session，不視為錯誤
                     pass
+            _audit("INFO", "stream_success", email=user_email, session_id=session_id,
+                   latency_ms=int((time.monotonic() - started_at) * 1000))
         except Exception as e:
+            _audit("ERROR", "stream_failed", email=user_email, session_id=session_id,
+                   reason=str(e), latency_ms=int((time.monotonic() - started_at) * 1000))
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
         finally:
             _active_streams[user_email] -= 1
