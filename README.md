@@ -6,10 +6,13 @@
 
 ```
 chat-bot/
-├── client/        # 前端：使用者自然語言介面
-├── bff/           # Backend For Frontend：請求中介 & Auth
-├── agent/         # Conversational Agent + 爬蟲 (OWASP)
-├── terraform/     # Infrastructure state（可刪除的運算/網路/資料庫資源）
+├── client/        # 前端：聊天介面（Login + Chat，WebSocket 串流）
+├── bff/           # Backend For Frontend：Auth、Rate Limiting、CX Agent 串接、audit log
+├── crawler/       # OWASP 爬蟲，輸出 raw JSON 到 GCS
+├── ingestion/     # raw JSON chunk + embedding 後寫入 Cloud SQL pgvector（批次入庫）
+├── agent/         # Agent 技術選型文件（已決定採用 CX Agent Studio）
+├── ces-agnets/    # CX Agent Studio 匯出的 Agent 設定備份
+├── terraform/     # Infrastructure state（Cloud Run / SQL / VPC / VPC-SC / PSC / Monitoring）
 ├── terraform-data/# Data state（長期保留的資料資源，如 GCS bucket）
 ├── SCOPE.md       # GCP 學習計劃 & 進度追蹤
 └── CONTEXT.md     # AI 查詢用 Context 文件 (可直接貼給 Gemini)
@@ -38,35 +41,44 @@ chat-bot/
 使用者
   │ 自然語言輸入
   ▼
-[client]  ─── HTTP/WS ───►  [bff]  ─── Internal ───►  [agent]
-                                                           │
-                                              ┌────────────┘
-                                              │  查詢知識庫
-                                              ▼
-                                        [Cloud SQL]  ◄──  爬蟲定期更新
-                                      (OWASP 規範)        (Cloud Run Jobs)
+[client]  ── WebSocket (BidiRunSession) ──►  [bff]  ── runSession / BidiRunSession ──►  [CX Agent]
+                                                                                      (Vertex AI Agent Engine)
+                                                                                              │
+                                                                            Root Agent 路由 → General / Security Subagent
+                                                                                              │
+                                                                                  原生 Data Store 查詢 (GCS)
+                                                                                              ▲
+                                                                                爬蟲定期更新 (Cloud Run Jobs)
 ```
+
+Cloud SQL (pgvector) 現僅用於 `ingestion/` 批次入庫留存，request-time 的 RAG 查詢已由 CX Agent 原生 Data Store 取代。
 
 ## 🔧 GCP 服務使用
 
 | 服務 | 用途 | 狀態 |
 |------|------|------|
 | Cloud Run | BFF Service 部署 | ✅ Done (D14) |
-| Cloud SQL (PostgreSQL) | 知識庫儲存 | ✅ Done (D8) |
+| Cloud SQL (PostgreSQL) | 向量資料批次入庫 | ✅ Done (D8) |
 | Artifact Registry | Docker Image 管理 | ✅ Done (D13) |
 | Cloud Run Jobs | Crawler / Vectorize Pipeline | ✅ Done (D10-D11) |
-| Cloud Scheduler | 自動化觸發 | 📅 D11 |
 | Firebase / IAM Auth | 身分驗證 | ✅ Done (D14) |
-| Secret Manager | 憑證管理 | 📅 D15 |
-| Vertex AI | RAG / Gemini API | 📅 D25-26 |
+| Secret Manager | 憑證管理 | ✅ Done (D17) |
+| Vertex AI Agent Engine (CX Agent Studio) | 對話式 Agent、意圖路由、RAG | ✅ Done (D15-D21) |
 | VPC / Firewall / NAT | 網路安全 | ✅ Done (D6, D9) |
+| VPC Service Controls | 服務邊界，防止向量資料外洩 | ✅ Done (D24) |
+| Private Service Connect | 私密存取 Vertex AI | ✅ Done (D25) |
+| Cloud Monitoring / Logging | Audit log、log-based metric、Dashboard | ✅ Done (D26) |
+| Budget Alerts | 預算警告 | 📅 D27 |
+| Cloud Build | CI/CD Pipeline | 📅 D28 |
 | Terraform | IaC | ✅ Done (D5) |
 
 ## 📍 當前狀態
 
-- D14 已完成：BFF 已改為 FastAPI + Firebase ID Token 驗證，Client 有本地測試頁可登入並呼叫 `/query`
-- 爬蟲與向量化流程已落地：`crawler/` 產 raw JSON，`ingestion/` 產 embedding 並寫入 Cloud SQL pgvector
-- Agent 服務尚未接上：BFF `/query` 目前仍回 placeholder，D15 先處理 Secret Manager 與密碼管理
+- D26 已完成：Week 5（Monitoring, CI/CD & Final Review）進行中，目前進度到 D27
+- 對話邏輯已改用 **CX Agent Studio (Vertex AI Agent Engine)**：Root Agent + General/Security Subagent 意圖路由，RAG 查詢與 Session 記憶皆由平台原生處理
+- `client` 已是正式聊天介面（Login + Chat），透過 WebSocket 以逐字流式輸出呈現回覆
+- `bff` 已完成 Firebase 驗證、公司帳號限制、Rate Limiting、CX Agent 串接與 audit log（成功/失敗、latency_ms）
+- 下一步 **D27**：Budget Alerts（預算警告）與 Cloud Run 效能調優（冷啟動優化）
 
 ## 🌍 雙環境說明
 
@@ -90,8 +102,10 @@ chat-bot/
 請見 [SCOPE.md](./SCOPE.md)
 
 ## 🛠️ 技術債與待辦事項
-- **Terraform IAM**: 當 BFF 的 `/vector-search` 端點建立後，需確認 CX Agent 是否有權限呼叫。可能需要為 BFF 的服務帳號 (`chatbot-bff-sa`) 新增 `roles/run.invoker` 權限，並將 CX Agent 的服務帳號加入允許清單。
-- **Terraform Cloud Run Ingress**: BFF 的 `/vector-search` 端點應設定為僅允許內部流量 (Ingress Control: Internal)，確保只有 GCP 內的服務 (如 CX Agent) 可以呼叫，增加安全性。
+- **VPC Connector 連通性**: 測試 Cloud Run 是否能成功透過 VPC Connector 存取 Private IP 資源。
+- **CX Agent 憑證管理** (D17+): 改用 Terraform Variable，部署時自動從 `env/*.mk` 傳入，不需手動建立 secret versions。
+
+> 註：原「BFF `/vector-search` Webhook 供 CX Agent 呼叫」的技術債已隨 D19-D20 架構調整（改用 Vertex AI + GCS Data Store 原生 RAG）一併移除，不再適用。
 
 ---
-*Last Updated: 2026-05-25*
+*Last Updated: 2026-07-08*
