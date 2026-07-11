@@ -51,7 +51,7 @@
 ### Week 5: Monitoring, CI/CD & Final Review (Future 📅)
 - [x] D26: Logging & Monitoring: BFF 補 query/stream 完成時的成功/失敗 audit log（latency_ms、reason），Terraform 建 log-based metric（成功/失敗次數、latency 分布）+ Cloud Monitoring Dashboard，並疊上 CES 平台原生 metric（`app/token_consumption_count`、`app/session_count`）
 - [-] D26 (原定計劃): SQL 查詢速度 ← 架構轉向 Vertex AI Data Store 後，Cloud SQL 只剩 ingestion 批次入庫使用，BFF 沒有 request-time SQL 可測，故移除此項
-- [ ] D27: Budget Alerts (預算警告) 與 Cloud Run 效能調優 (冷啟動優化)
+- [x] D27: Budget Alerts (預算警告) 與 Cloud Run 效能調優 (冷啟動優化)
 - [ ] D28: CI/CD Pipeline (Cloud Build): 實現程式碼更動後自動部署至 Cloud Run
 - [ ] D29-D30: 最終架構評審: 撰寫專案報告，比較「自建 RAG (方案 B)」與「Data Store (方案 A)」的成本與效能差異。
 
@@ -60,4 +60,4 @@
 - [ ] D17+: CX Agent 憑證改用 Terraform Variable，部署時自動從 env/*.mk 傳入（不需手動建立 secret versions）。
 
 ---
-*Last Updated: 2026-07-08*
+*Last Updated: 2026-07-11*

@@ -48,6 +48,12 @@ resource "google_cloud_run_v2_service" "bff_service" {
         name  = "CES_DEPLOYMENT_NAME"
         value = var.ces_deployment_name
       }
+
+      # D27: 冷啟動優化 — 啟動階段（container 拉起到 ready）臨時給更多 CPU
+      # 加速 Python import / FastAPI 初始化，只在啟動時生效，不影響運行時計費
+      resources {
+        startup_cpu_boost = true
+      }
     }
   }
 }
