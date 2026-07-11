@@ -15,3 +15,11 @@ FIREBASE_PROJECT_ID=your-firebase-project-id
 # 取得方式：CX Agent Studio > Deploy > Channel > 複製 Deployment ID
 CES_APP_NAME=projects/YOUR_PROJECT_ID/locations/us/apps/YOUR_APP_ID
 CES_DEPLOYMENT_NAME=projects/YOUR_PROJECT_ID/locations/us/apps/YOUR_APP_ID/deployments/YOUR_DEPLOYMENT_ID
+
+# D27: Budget Alerts
+# PROJECT_NUMBER 取得方式：gcloud projects list
+# BILLING_ACCOUNT_ID 取得方式：gcloud beta billing accounts list（空白時 budget.tf 資源全部跳過）
+PROJECT_NUMBER=your-project-number
+BILLING_ACCOUNT_ID=
+BUDGET_ALERT_EMAIL=your-alert-email@example.com
+BUDGET_AMOUNT_TWD=1000

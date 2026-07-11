@@ -24,7 +24,11 @@ GCS_BUCKET?=bank-ai-excel-assets-$(PROJECT_ID)
 ORG_ID?=
 DEVELOPER_IP?=
 PROJECT_NUMBER?=
-TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID) -var=ces_app_name=$(CES_APP_NAME) -var=ces_deployment_name=$(CES_DEPLOYMENT_NAME) -var=org_id=$(ORG_ID) -var='developer_ip_ranges=["$(DEVELOPER_IP)"]' -var=project_number=$(PROJECT_NUMBER)
+# D27: Budget Alerts（執行 gcloud beta billing accounts list 取得 BILLING_ACCOUNT_ID；空白時 budget.tf 資源跳過）
+BILLING_ACCOUNT_ID?=
+BUDGET_ALERT_EMAIL?=
+BUDGET_AMOUNT_TWD?=1000
+TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET) -var=firebase_project_id=$(FIREBASE_PROJECT_ID) -var=ces_app_name=$(CES_APP_NAME) -var=ces_deployment_name=$(CES_DEPLOYMENT_NAME) -var=org_id=$(ORG_ID) -var='developer_ip_ranges=["$(DEVELOPER_IP)"]' -var=project_number=$(PROJECT_NUMBER) -var=billing_account_id=$(BILLING_ACCOUNT_ID) -var=budget_alert_email=$(BUDGET_ALERT_EMAIL) -var=budget_amount_twd=$(BUDGET_AMOUNT_TWD)
 DATA_TF_ARGS=-var=project_id=$(PROJECT_ID) -var=region=$(REGION) -var=assets_bucket_name=$(GCS_BUCKET)
 
 # 1. 啟動/部署全部資源

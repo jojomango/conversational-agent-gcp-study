@@ -58,3 +58,22 @@ variable "project_number" {
   type        = string
   default     = ""
 }
+
+# D27: Budget Alerts
+variable "billing_account_id" {
+  description = "GCP Billing Account ID（執行 gcloud beta billing accounts list 取得，格式 XXXXXX-XXXXXX-XXXXXX）。空白時 budget.tf 資源全部跳過（例如公司 Lab 通常沒有帳務權限）"
+  type        = string
+  default     = ""
+}
+
+variable "budget_amount_twd" {
+  description = "每月預算金額（新台幣），達到門檻比例時觸發通知"
+  type        = number
+  default     = 1000
+}
+
+variable "budget_alert_email" {
+  description = "Budget 告警通知信箱。空白時仍會用 GCP 預設對象（Billing Account Administrator/User）收到通知，只是不會額外建立 notification channel"
+  type        = string
+  default     = ""
+}

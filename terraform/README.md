@@ -14,6 +14,8 @@ terraform/
 ├── database.tf       # Cloud SQL, Private Service Access
 ├── vpc_sc.tf         # VPC Service Controls (Service Perimeter)
 ├── psc.tf            # Private Service Connect (私有存取 Google APIs)
+├── monitoring.tf     # Log-based Metrics + Cloud Monitoring Dashboard
+├── budget.tf         # Billing Budget + Email 通知
 └── storage_ref.tf    # 讀取 terraform-data 管理的 bucket (data source)
 ```
 
@@ -64,6 +66,16 @@ Makefile 流程：
 - D17+: CES 憑證改用 Terraform Variable，不使用 Secret Manager
 - 原因：ces_app_name/ces_deployment_name 只是配置資訊，不是密碼
 - 省錢：不使用 Secret Manager，節省 ~$0.24/月
+
+### 📊 Monitoring (`monitoring.tf`)
+- Log-based Metric：BFF 成功/失敗次數、latency 分布（來源：`bff/main.py` 的 `_audit()` 結構化 log）
+- Cloud Monitoring Dashboard：疊上 CES 平台原生 metric（`app/token_consumption_count`、`app/session_count`）
+
+### 💰 Budget Alerts (`budget.tf`)
+- `google_billing_budget`：以本專案（`project_number`）為範圍的每月預算，50% / 80% / 100%（實際花費）與 120%（預估花費）觸發通知
+- `google_monitoring_notification_channel`：Email 通知管道
+- **前置條件**：`billing_account_id` 空白時全部跳過（取得方式：`gcloud beta billing accounts list`），公司 Lab 通常沒有帳務權限，故只在個人環境（`env/dev.mk`）設定
+- 需先手動啟用 API：`gcloud services enable billingbudgets.googleapis.com --project=<PROJECT_ID>`
 
 ## 使用方式
 
@@ -130,6 +142,8 @@ terraform apply \
 | scheduler.tf | 📅 尚未加入 | D11+ |
 | vpc_sc.tf | ✅ Done (dry-run) | D24 |
 | psc.tf | ✅ Done (未 apply，待實測) | D25 |
+| monitoring.tf | ✅ Done | D26 |
+| budget.tf | ✅ Done (寫好，待 apply) | D27 |
 
 ## 注意事項
 
@@ -139,4 +153,4 @@ terraform apply \
 - 公司 Lab：主要透過 `env/lab.mk` 覆蓋 project 相關變數，且組織層級資源無法修改
 
 ---
-*Last Updated: 2026-05-16*
+*Last Updated: 2026-07-11*
