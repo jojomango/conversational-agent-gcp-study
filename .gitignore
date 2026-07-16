@@ -1,8 +1,8 @@
 crawler/data/
 
 # Terraform state (含敏感資訊，不進 Git)
-**/*.tfstate
-**/*.tfstate.backup
+**/*.tfstate*
+**/.terraform/
 
 # Environments
 .env
@@ -12,9 +12,15 @@ env/lab.mk
 # Firebase client config (含實際金鑰，請參考 client/config.example.js)
 client/config.js
 
+# Demo 頁面 (含實際 GCP project-id / agent-id，請參考 demos/flow-demo.example.html)
+demos/flow-demo.html
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 venv/
 .venv/
+
+# macOS
+.DS_Store

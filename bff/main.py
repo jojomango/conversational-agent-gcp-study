@@ -33,11 +33,8 @@ ALLOWED_ORIGINS = os.getenv(
 # 公司帳號規則：八碼員編 + @cathaybk.com.tw 或 @lab.cathaybkdev.com.tw
 _COMPANY_EMAIL_RE = re.compile(r"^\d{8}@(cathaybk\.com\.tw|lab\.cathaybkdev\.com\.tw)$")
 
-# Demo 用稱呼對照表：employee_id → display_name
-_DISPLAY_NAME_MAP: dict[str, str] = {
-    "00000001": "jojo",
-    "q9898989": "jojo-私人",
-}
+# Demo 用稱呼對照表：employee_id → display_name，例如 {"00000001": "Alice"}
+_DISPLAY_NAME_MAP: dict[str, str] = {}
 _DEFAULT_DISPLAY_NAME = "John Doe"
 
 # ─── Audit Log ───────────────────────────────────────────────────────────────
@@ -67,7 +64,7 @@ _active_streams: dict[str, int] = {}
 # 生產環境（Cloud Run）保持空值，只走公司 domain 規則
 _ALLOWED_EMAILS: set[str] = {
     e.strip().lower()
-    for e in os.getenv("ALLOWED_EMAILS", "you@example.com").split(",")
+    for e in os.getenv("ALLOWED_EMAILS", "").split(",")
     if e.strip()
 }
 

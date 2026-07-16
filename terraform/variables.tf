@@ -23,7 +23,7 @@ variable "assets_bucket_name" {
 }
 
 variable "firebase_project_id" {
-  description = "Firebase Project ID（與 GCP Project ID 不同，啟用 Firebase 時會加後綴，例如 your-firebase-project-id）"
+  description = "Firebase Project ID（與 GCP Project ID 不同，啟用 Firebase 時會加後綴，例如 your-gcp-project-id-a9e0f）"
   type        = string
   default     = "your-firebase-project-id"
 }
