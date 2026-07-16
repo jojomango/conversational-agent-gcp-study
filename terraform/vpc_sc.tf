@@ -53,10 +53,10 @@ resource "google_access_context_manager_service_perimeter" "bank_ai_perimeter" {
 
     # 受保護的 GCP API（邊界外的請求若未符合 Access Level 條件則被拒絕）
     restricted_services = [
-      "storage.googleapis.com",        # GCS：crawler 原始資料 & 向量前處理資料
-      "aiplatform.googleapis.com",     # Vertex AI：AI Agent & Embedding API
-      "sqladmin.googleapis.com",       # Cloud SQL Admin：pgvector 向量資料庫
-      "secretmanager.googleapis.com",  # Secret Manager：憑證 & API keys
+      "storage.googleapis.com",       # GCS：crawler 原始資料 & 向量前處理資料
+      "aiplatform.googleapis.com",    # Vertex AI：AI Agent & Embedding API
+      "sqladmin.googleapis.com",      # Cloud SQL Admin：pgvector 向量資料庫
+      "secretmanager.googleapis.com", # Secret Manager：憑證 & API keys
     ]
 
     # 引用上方定義的通行證

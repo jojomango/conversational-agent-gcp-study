@@ -1,0 +1,42 @@
+# D28: release/xxx 分支的 CI/CD — 情境二（Continuous Delivery + 手動 approval）
+# push 到 release/xxx 分支只自動跑 CI（build + push image）；
+# CD 交給 Cloud Deploy 的 release，prod target 設有 requireApproval，
+# 需要有人在 Cloud Deploy 手動 approve 這個 rollout 才會真的部署到 prod。
+# 對應 terraform/cicd.tf 的 google_cloudbuild_trigger.release 與 clouddeploy.tf 的 prod target。
+#
+# 注意：本專案目前沒有真的建立 prod project，這份設定只做流程示意，
+# 不會被實際觸發（release trigger 由 terraform/cicd.tf 的 prod_project_id 條件式建立/跳過）。
+
+substitutions:
+  _REGION: asia-east1
+  _AR_REPO: bank-ai
+  _IMAGE_NAME: bank-bff
+  _DELIVERY_PIPELINE: bank-bff-release-pipeline
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_IMAGE_NAME}:${SHORT_SHA}
+      - bff/
+
+  - name: gcr.io/cloud-builders/docker
+    args: [push, "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_IMAGE_NAME}:${SHORT_SHA}"]
+
+  # CI 到此結束。CD（是否部署到 prod）由 Cloud Deploy 的 approval 關卡決定，
+  # 這個 build 執行完不代表 prod 已更新。
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - deploy
+      - releases
+      - create
+      - rel-${SHORT_SHA}
+      - --delivery-pipeline=${_DELIVERY_PIPELINE}
+      - --region=${_REGION}
+      - --project=${PROJECT_ID}
+      - --images=bff-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_IMAGE_NAME}:${SHORT_SHA}
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_IMAGE_NAME}:${SHORT_SHA}

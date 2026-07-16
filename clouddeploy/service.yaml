@@ -1,0 +1,14 @@
+# D28: prod target 的 Cloud Run manifest（示意用）
+# "bff-image" 是 placeholder，Cloud Deploy render 時會用 cloudbuild-release.yaml 裡
+# --images=bff-image=... 指定的實際 image 替換掉。
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: chatbot-bff
+spec:
+  template:
+    spec:
+      containers:
+        - image: bff-image
+          ports:
+            - containerPort: 8080

@@ -68,17 +68,17 @@ Cloud SQL (pgvector) 現僅用於 `ingestion/` 批次入庫留存，request-time
 | VPC Service Controls | 服務邊界，防止向量資料外洩 | ✅ Done (D24) |
 | Private Service Connect | 私密存取 Vertex AI | ✅ Done (D25) |
 | Cloud Monitoring / Logging | Audit log、log-based metric、Dashboard | ✅ Done (D26) |
-| Budget Alerts | 預算警告 | 📅 D27 |
-| Cloud Build | CI/CD Pipeline | 📅 D28 |
+| Budget Alerts | 預算警告 | ✅ Done (D27) |
+| Cloud Build / Cloud Deploy | CI/CD Pipeline | 🚧 D28 進行中 |
 | Terraform | IaC | ✅ Done (D5) |
 
 ## 📍 當前狀態
 
-- D26 已完成：Week 5（Monitoring, CI/CD & Final Review）進行中，目前進度到 D27
+- D27 已完成：Week 5（Monitoring, CI/CD & Final Review）進行中，目前進度到 D28
 - 對話邏輯已改用 **CX Agent Studio (Vertex AI Agent Engine)**：Root Agent + General/Security Subagent 意圖路由，RAG 查詢與 Session 記憶皆由平台原生處理
 - `client` 已是正式聊天介面（Login + Chat），透過 WebSocket 以逐字流式輸出呈現回覆
 - `bff` 已完成 Firebase 驗證、公司帳號限制、Rate Limiting、CX Agent 串接與 audit log（成功/失敗、latency_ms）
-- 下一步 **D27**：Budget Alerts（預算警告）與 Cloud Run 效能調優（冷啟動優化）
+- 進行中 **D28**：CI/CD Pipeline — git flow（main / staging / release）與 Cloud Build + Cloud Deploy 架構已寫成 IaC，尚未連接真實 GitHub repo 與 prod project，相關資源目前皆條件式跳過（見 [terraform/cicd.tf](terraform/cicd.tf)、[terraform/clouddeploy.tf](terraform/clouddeploy.tf)）
 
 ## 🌍 雙環境說明
 
@@ -108,4 +108,4 @@ Cloud SQL (pgvector) 現僅用於 `ingestion/` 批次入庫留存，request-time
 > 註：原「BFF `/vector-search` Webhook 供 CX Agent 呼叫」的技術債已隨 D19-D20 架構調整（改用 Vertex AI + GCS Data Store 原生 RAG）一併移除，不再適用。
 
 ---
-*Last Updated: 2026-07-08*
+*Last Updated: 2026-07-16*

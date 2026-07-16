@@ -1,0 +1,9 @@
+# D28: Cloud Deploy 用來 render/部署 Cloud Run service 的 skaffold 設定
+# 示意用 — 對應唯一的 prod target（見 terraform/clouddeploy.tf）
+apiVersion: skaffold/v4beta6
+kind: Config
+manifests:
+  rawYaml:
+    - service.yaml
+deploy:
+  cloudrun: {}

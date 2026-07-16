@@ -2,7 +2,7 @@
 
 > **用途**：直接貼給 Gemini / ChatGPT 等 AI 工具使用，提供完整專案背景。
 > **維護**：每次有進度更新時同步更新此文件。
-> **Last Updated**: 2026-07-08
+> **Last Updated**: 2026-07-16
 
 ---
 
@@ -95,9 +95,18 @@ chat-bot/
 - D26: Logging & Monitoring：BFF 補 query/stream 完成時的成功/失敗 audit log（latency_ms、reason），Terraform 建 log-based metric（成功/失敗次數、latency 分布）+ Cloud Monitoring Dashboard，疊上 CES 平台原生 metric（`app/token_consumption_count`、`app/session_count`）
   - ~~原定：SQL 查詢速度~~ → 架構轉向 Vertex AI Data Store 後，Cloud SQL 只剩 ingestion 批次入庫用途，BFF 沒有 request-time SQL 可測，移除此項
 
+### ✅ 完成 (Week 5 續)
+- D27: Budget Alerts（預算警告）與 Cloud Run 效能調優（冷啟動優化）
+
 ### 🔜 目前位置 / 計劃中 (Week 5)
-- **D27**: Budget Alerts（預算警告）與 Cloud Run 效能調優（冷啟動優化）
-- D28: CI/CD Pipeline (Cloud Build)：程式碼更動後自動部署至 Cloud Run
+- **D28**: CI/CD Pipeline (Cloud Build + Cloud Deploy)。git flow 設計：
+  - `main`：乾淨分支，不觸發任何 pipeline，只作為 prod 目前版本的歷史紀錄 / hotfix 起點
+  - `feat/xxx`：從 main 切出，開發完 merge 進 staging 驗證（保留分支不刪，方便上線前挑選）
+  - `staging`：push 自動觸發 CI+CD（Continuous Deployment），build 完直接部署到驗證環境，無 approval
+  - 上線前把驗證通過的 feat 直接 merge 回 main，再從 main 切出 `release/xxx`
+  - `release/xxx`：push 自動觸發 CI（build+push image），CD 交給 Cloud Deploy 的 prod target，需人工 approve rollout 才真正部署（Continuous Delivery）
+  - 已落地為 IaC：[terraform/cicd.tf](terraform/cicd.tf)（Cloud Build trigger）、[terraform/clouddeploy.tf](terraform/clouddeploy.tf)（delivery pipeline + prod target）、[cloudbuild-staging.yaml](cloudbuild-staging.yaml)、[cloudbuild-release.yaml](cloudbuild-release.yaml)、[clouddeploy/](clouddeploy/)
+  - 目前 `github_owner`/`github_repo_name`（repo 尚未推上 GitHub）與 `prod_project_id`（prod project 尚未建立）都留空，對應資源全部條件式跳過，不影響現有 `make up`
 - D29-D30: 最終架構評審：撰寫專案報告，比較「自建 RAG (方案 B)」與「Data Store (方案 A)」的成本與效能差異
 
 ## 6. 技術債 / 待辦

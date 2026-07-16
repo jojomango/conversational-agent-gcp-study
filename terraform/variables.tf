@@ -59,6 +59,19 @@ variable "project_number" {
   default     = ""
 }
 
+# D28: CI/CD — prod project（示意用，目前尚未真的建立）
+variable "prod_project_id" {
+  description = "prod 環境的 GCP Project ID。留空時，release trigger 與 Cloud Deploy pipeline/prod target 全部跳過（見 cicd.tf），只作為架構示意，不會對不存在的 project 執行 apply"
+  type        = string
+  default     = ""
+}
+
+variable "prod_region" {
+  description = "prod 環境的 region，留空時沿用 var.region"
+  type        = string
+  default     = ""
+}
+
 # D27: Budget Alerts
 variable "billing_account_id" {
   description = "GCP Billing Account ID（執行 gcloud beta billing accounts list 取得，格式 XXXXXX-XXXXXX-XXXXXX）。空白時 budget.tf 資源全部跳過（例如公司 Lab 通常沒有帳務權限）"
